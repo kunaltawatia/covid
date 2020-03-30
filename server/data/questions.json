@@ -1,0 +1,293 @@
+{
+    "questions": [
+        {
+            "statement": "क्या आपको बुखार है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 1,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 2,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "वर्तमान में आपके शरीर का ताप क्या है?",
+            "type": "select",
+            "answers": [
+                {
+                    "nextQuestion": 2,
+                    "value": 0,
+                    "statement": "मापा नहीं "
+                },
+                {
+                    "nextQuestion": 2,
+                    "value": 1,
+                    "statement": "100°"
+                },
+                {
+                    "nextQuestion": 2,
+                    "value": 2,
+                    "statement": "102°"
+                },
+                {
+                    "nextQuestion": 2,
+                    "value": 3,
+                    "statement": "103°"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आपको खासी है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 3,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 4,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आपको खांसते वक्त बलगम की भी शिकायत है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 4,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 4,
+                    "value": 1,
+                    "statement": "नहीं, सिर्फ सूखी खांसी"
+                }
+            ]
+        },
+        {
+            "statement": "सांस लेने में कोई तकलीफ?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 5,
+                    "value": 0,
+                    "statement": "जी हाँ"
+                },
+                {
+                    "nextQuestion": 5,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आपको शरीर में थकान या दर्द की भी शिकायत है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 6,
+                    "value": 0,
+                    "statement": "जी हाँ"
+                },
+                {
+                    "nextQuestion": 6,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "सिर दर्द की तकलीफ?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 7,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 7,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "गले में खराश?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 8,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 8,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आपने पिछले 14 दिनों में कोई अंतरराष्ट्रीय यात्रा की है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 9,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "कितने दिन पहले?",
+            "type": "select",
+            "answers": [
+                {
+                    "nextQuestion": 10,
+                    "value": 0,
+                    "statement": "आज"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 1,
+                    "statement": "कल"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 2,
+                    "statement": "परसों"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 3,
+                    "statement": "3 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 4,
+                    "statement": "4 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 5,
+                    "statement": "5 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 6,
+                    "statement": "6 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 7,
+                    "statement": "7 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 8,
+                    "statement": "8 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 9,
+                    "statement": "9 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 10,
+                    "statement": "10 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 11,
+                    "statement": "11 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 12,
+                    "statement": "12 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 13,
+                    "statement": "13 दिन पहले"
+                },
+                {
+                    "nextQuestion": 10,
+                    "value": 14,
+                    "statement": "14 दिन पहले"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आपके घर में कोई इस नए कोरोना वायरस से संक्रमित है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 0,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 11,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "क्या आप पिछले 14 दिनों में COVID-19 के सकारात्मक पाए गए किसी व्यक्ति के निकट संपर्क में थे?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 12,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 0,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "statement": "कब और कैसे संपर्क हुआ उनके साथ?",
+            "type": "text",
+            "nextQuestion": 0
+        },
+        {
+            "statement": "आपका नाम?",
+            "type": "text",
+            "nextQuestion": 14
+        },
+        {
+            "statement": "आपका संपर्क नंबर?",
+            "type": "tel",
+            "nextQuestion": 15,
+            "pattern": "[0-9]{10}"
+        },
+        {
+            "statement": "आपकी उम्र?",
+            "type": "tel",
+            "nextQuestion": 0,
+            "pattern": "[0-9]{1,3}"
+        }
+    ]
+}
