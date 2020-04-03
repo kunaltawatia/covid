@@ -1,80 +1,122 @@
 var express = require('express');
-var questions = require('../data/questions.json');
+var fs = require('fs');
+var path = require('path');
+
+var { answersToModel } = require('../helper');
+var authenticate = require('../helper/auth');
+
+var { questions } = require('../data/questions.json');
+
+var Patient = require('../models/patient');
+var { Hits } = require('../models/miscellaneous');
 
 var router = express.Router();
 
-function checkForSuspect(answers, callback) {
+require('../helper/corona_data');
 
-  let cough = false, fever = false, shortnessOfBreath = false;
-  let symptomatic = false, traveller = false, contactWithPatient = false, familyPatient = false;
-  let suspect = false;
-
-  if (answers) {
-    fever = answers['0'] === '0';
-    cough = answers['2'] === '0';
-    shortnessOfBreath = answers['4'] === '0';
-
-    traveller = answers['8'] === '0';
-    familyPatient = answers['10'] === '0';
-    contactWithPatient = answers['11'] === '0';
-
-    symptomatic = fever || cough || shortnessOfBreath;
-
-    suspect =
-      (traveller && symptomatic) ||
-      (contactWithPatient && symptomatic) ||
-      (familyPatient)
-
-    callback(suspect);
-  }
-
-  else callback(false);
-
-}
-
-router.post('/pre-assessment', (req, res) => {
-  const { answers } = req.body;
-  checkForSuspect(answers, (suspect) => {
+router.get('/cases', (req, res) => {
+  fs.readFile(path.join(__dirname, '../data/cases.json'), 'utf8', (err, doc) => {
+    if (err) return res.json({ err });
     res.json({
-      suspect,
-      questionIndex: 13,
-      incomingChats: suspect ?
-        [
-          {
-            statement: 'सभी उपलब्ध चिकित्सक वर्तमान में व्यस्त हैं',
-            type: 'incoming'
-          },
-          {
-            statement: 'कृपया हमें कुछ विवरण दें ताकि हम आपसे संपर्क कर सकें',
-            type: 'incoming'
-          }
-        ]
-        :
-        [
+      ...JSON.parse(doc)
+    })
+  });
+})
 
-        ]
 
-      /*
-        incoming chats:
-        > give assurance that 
-          13% corona virus patient don't have fever etc...
-        > jaaniye kaise dhake muu ko...
-        > 
-      */
-    });
-  })
-});
+router.post('/assessment', (req, res) => {
 
-router.post('/post-suspection', (req, res) => {
-  console.log(req.body);
+  const { answers, latitude, longitude } = req.body;
+
+  answersToModel(answers, (model) => {
+    Patient.create({
+      ...model,
+      latitude,
+      longitude,
+      ip: req.headers['x-real-ip'] || req.ip,
+      created_at: Date.now(),
+      chat_id: '',
+      doctor: ''
+    }, (err, doc) => {
+
+      if (err) return res.json({ error: true });
+
+      const { suspect, _id } = doc;
+
+      res.json({
+        questionIndex: 17,
+        patientId: _id,
+        suspect: true,
+        incomingChats: suspect ?
+          [
+            {
+              statement: 'हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे',
+              type: 'incoming'
+            }
+          ]
+          :
+          [
+            {
+              statement: 'आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)',
+              type: 'incoming'
+            },
+            {
+              statement: 'कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें',
+              type: 'incoming'
+            },
+            {
+              statement: 'धन्यवाद',
+              type: 'incoming'
+            }
+          ]
+      });
+    })
+  });
+})
+
+router.get('/questions', (req, res) => {
+  /* doctor's availability status and welcome message */
   res.json({
+    questions,
     incomingChats: [
       {
-        statement: 'डॉक्टर जल्द ही आपसे संपर्क करेंगे',
+        statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
+        type: 'incoming'
+      },
+      {
+        statement: 'आपका स्वागत है',
         type: 'incoming'
       }
     ]
-  });
+  })
 })
+
+router.get('/patient-list', authenticate, (req, res) => {
+  const { page } = req.query, pageSize = 30;
+  Patient.find({}, {}, {
+    limit: pageSize,
+    skip: pageSize * Math.max(0, page - 1),
+    sort: {
+      created_at: -1
+    }
+  }, (err, patients) => {
+    if (err) return res.json({ error: true });
+    res.json({
+      patients
+    })
+  })
+});
+
+router.get('/hits', (req, res) => {
+  Hits.findOneAndUpdate({}, { $inc: { hits: 1 } }, (err, result) => {
+    if (err) return res.json({});
+    const { hits } = result;
+    res.json({ hits });
+  });
+});
+
+router.post('/login', authenticate, (req, res) => {
+  res.json({ login: true, username: req.session.username });
+});
 
 module.exports = router;

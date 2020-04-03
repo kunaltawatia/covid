@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ENDPOINT } from '../config';
+import LazyLoad from 'react-lazy-load';
 
-import $ from 'jquery';
+// import FAQ from './faq';
 
-import { format, zonedTimeToUtc } from 'date-fns-tz';
-import { formatDistance, compareAsc } from 'date-fns';
+// import $ from 'jquery';
 
-import Table from './table';
+// import { format, zonedTimeToUtc } from 'date-fns-tz';
+// import { formatDistance, compareAsc } from 'date-fns';
+
+// import Table from './table';
 import Level from './level';
-import ChoroplethMap from './choropleth';
-import TimeSeries from './timeseries';
+// import ChoroplethMap from './choropleth';
+// import TimeSeries from './timeseries';
 import Minigraph from './minigraph';
-import Banner from './banner';
+// import Banner from './banner';
 import Chat from './chatbot';
 
 function Home(props) {
-  const [states, setStates] = useState([]);
   const [nationalStats, setNationalStats] = useState({});
   const [rajasthanStats, setRajasthanStats] = useState({});
   const [fetched, setFetched] = useState(false);
@@ -26,6 +28,7 @@ function Home(props) {
   const [deltas, setDeltas] = useState([]);
   const [timeseriesMode, setTimeseriesMode] = useState(true);
   const [stateHighlighted, setStateHighlighted] = useState(undefined);
+  const [faqVisible, setFAQ] = useState(false);
 
   useEffect(() => {
     if (fetched === false) {
@@ -34,7 +37,7 @@ function Home(props) {
   }, [fetched]);
 
   const getStates = () => {
-    axios.get(ENDPOINT + '/cases.json')
+    axios.get(ENDPOINT + '/api/cases')
       .then((response) => {
         // setStates(response.data.statewise);
         setTimeseries(response.data.cases_time_series);
@@ -45,7 +48,7 @@ function Home(props) {
         setRajasthanStats(response.data.rajasthan_stats);
       })
       .catch((err) => {
-      console.log(err);
+        console.log(err);
       });
   };
 
@@ -67,7 +70,7 @@ function Home(props) {
     <div className="Home">
       <div className="home-left">
 
-        <div className="header animate" style={{ animationDelay: '0.5s' }}>
+        <div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
           <div className="header-mid">
             <div className="titles">
               <h1>COVID-19 सहायता पोर्टल</h1>
@@ -81,7 +84,7 @@ function Home(props) {
 
       <div className="home-right">
 
-        <div className="header animate" style={{ animationDelay: '0.5s' }}>
+        <div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
           <div className="header-right">
             <div className="titles">
               <h2>राष्ट्रीय आँकड़े</h2>
@@ -93,7 +96,7 @@ function Home(props) {
         <Level data={nationalStats} deltas={deltas} />
         <Minigraph timeseries={timeseries} animate={true} />
 
-        <div className="header animate" style={{ animationDelay: '0.5s', paddingTop: 0 }}>
+        <div className="header fadeInUp" style={{ animationDelay: '0.5s', paddingTop: 0 }}>
           <div className="header-right">
             <div className="titles">
               <h2>स्थानीय आँकड़े</h2>
@@ -103,15 +106,15 @@ function Home(props) {
         </div>
 
         <Level data={rajasthanStats} />
-        <Minigraph timeseries={timeseries} animate={true} />
+        {/* <Minigraph timeseries={timeseries} animate={true} /> */}
 
         {/* <Table states={states} summary={false} onHighlightState={onHighlightState} /> */}
 
-        <video src='/videos/who.mp4' controls={true} className="who-video animate" style={{ animationDelay: '0.5s' }}></video>
+        <video src='/videos/who.mp4' controls={true} className="who-video fadeInUp" style={{ animationDelay: '0.5s' }}></video>
 
         {/* <ChoroplethMap states={states} stateHighlighted={stateHighlighted} />
 
-        <div className="timeseries-header animate" style={{animationDelay: '1.5s'}}>
+        <div className="timeseries-header fadeInUp" style={{animationDelay: '1.5s'}}>
           <h1>Spread Trends</h1>
           <div className="tabs">
             <div className={`tab ${graphOption===1 ? 'focused' : ''}`} onClick={()=>{
@@ -138,10 +141,34 @@ function Home(props) {
         <TimeSeries timeseries={timeseries} type={graphOption} mode={timeseriesMode}/> */}
 
       </div>
-
-      <img src="/images/prevention.jpg" className="prevention-image animate" style={{ animationDelay: '0.5s' }}></img>
-      <img src="/images/myths.jpg" className="myth-image animate" style={{ animationDelay: '0.5s' }}></img>
-
+      <LazyLoad offsetVertical={300}>
+        <img src="/images/prevention.jpg" className="prevention-image fadeInUp" style={{ animationDelay: '0.5s' }}></img>
+      </LazyLoad>
+      <div className="helpline fadeInUp" style={{ animationDelay: '0.5s' }}>
+        <LazyLoad offsetVertical={300}>
+          <img src="/images/myths.jpg" className="myth-image"></img>
+        </LazyLoad>
+        <div className="row">
+          <div className="col">
+            <h2>हेल्पलाइन नंबर: </h2>
+            <a href="tel:1075" >
+              1075
+            </a>
+            <a href="tel:+91-11-23978046" >
+              +91-11-23978046
+            </a>
+          </div>
+          <div className="col">
+            <h2>हेल्पलाइन ईमेल आई.डी.</h2>
+            <a href="mail:ncov2019@gov.in">
+              ncov2019@gov.in
+            </a>
+            <a href="mail:ncov2019@gmail.com">
+              ncov2019@gmail.com
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

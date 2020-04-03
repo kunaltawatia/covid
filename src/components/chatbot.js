@@ -5,41 +5,53 @@ import $ from 'jquery';
 import axios from 'axios';
 import { ENDPOINT } from '../config';
 
+const client = require('socket.io-client');
+
 
 export default class Chat extends React.Component {
     state = {
         questions: [],
         answers: {},
         questionIndex: 0,
-        optionSelected: 0,
+        optionSelected: '0',
         textAnswered: '',
         chat: [],
         loading: true,
         questionsLoaded: false,
         suspect: false,
-        chatStarted: false
+        chatStarted: false,
+        doctor: null,
+        incomingTyping: false,
+        patientId: null,
+        suspect: false
     };
 
-    componentDidMount() {
+    socket = null
 
-        // location
-        axios.get(ENDPOINT + '/questions.json')
+    startChat = () => {
+        this.setState({ loadingChat: true });
+        axios.get(ENDPOINT + '/api/questions')
             .then(response => {
-                const { questions } = response.data;
+                const { questions, incomingChats } = response.data;
                 if (questions)
                     this.setState({
                         questions,
                         questionsLoaded: true,
-                        chat: [
+                        chat: incomingChats.concat([
                             {
                                 statement: questions[0].statement,
                                 type: 'incoming'
                             }
-                        ],
-                        loading: false
+                        ]),
+                        loading: false,
+                        chatStarted: true,
+                        loadingChat: false
                     });
             })
             .catch((error) => {
+                this.setState({ loadingChat: false });
+                alert
+                    ('Error Occured!');
                 console.log(error);
             });
         /*  In case we need constant viewport height
@@ -51,14 +63,97 @@ export default class Chat extends React.Component {
         */
     }
 
+    componentWillUnmount() {
+        if (this.socket)
+            this.socket.disconnect();
+    }
+
+    enterMessageIntoChat = (statement, type) => {
+        const { chat } = this.state;
+        this.setState({
+            chat: chat.concat([{ statement, type }])
+        }, this.scrollDown);
+    }
+
+    scrollDown = () => {
+        $("#chat-box").animate({ scrollTop: $("#chat-box")[0].scrollHeight }, 800);
+    }
+
+    sendMessage = (e) => {
+        const { doctor, textAnswered } = this.state;
+
+        if (e && e.preventDefault)
+            e.preventDefault();
+
+        if (textAnswered.length) {
+            this.setState({ textAnswered: '' });
+            this.socket.emit('message', textAnswered);
+            this.enterMessageIntoChat(textAnswered, 'outgoing');
+        }
+    }
+
+    handleMessageChange = (event) => {
+        const { id, value } = event.target;
+        const { textAnswered, doctor } = this.state;
+
+        this.setState({
+            [id]: value
+        });
+
+        if ((value.length === 0) ^ (textAnswered.length === 0)) {
+            this.socket.emit('typingChange', value.length > 0);
+        }
+    }
+
+    connect = () => {
+        const { patientId } = this.state;
+
+        this.socket = client(ENDPOINT, {
+            path: '/app_chat',
+            query: {
+                patientId,
+                type: 'patient'
+            }
+        });
+
+        this.socket.on('doctorAlloted', (doctor) => {
+            this.setState({
+                loading: false,
+                doctor
+            });
+            this.socket.emit('sendChatsToDoctor', JSON.stringify({ chat: this.state.chat }));
+        });
+
+        this.socket.on('onlineUsers', (onlineUsers) => {
+            this.setState({ onlineUsers });
+        });
+
+        this.socket.on('message', (text) => {
+            this.setState({ incomingTyping: false })
+            this.enterMessageIntoChat(text, 'incoming');
+        });
+
+        this.socket.on('typingChange', state => {
+            this.setState({ incomingTyping: state })
+            this.scrollDown();
+        });
+
+        this.socket.on('inactivity', () => {
+            this.socket.disconnect();
+            this.setState({ doctor: false, loading: true });
+        });
+    }
+
     answer = (e) => {
-
-        if (e && e.preventDefault) e.preventDefault();
-
         const { questionIndex, questions, optionSelected, chat, textAnswered } = this.state;
-        const { answers, type } = questions[questionIndex];
-        const nextQuestion = type.startsWith('te') ? questions[questionIndex].nextQuestion : answers && answers[optionSelected] && answers[optionSelected].nextQuestion;
+        const { answers, type } = questions[questionIndex] || {};
+
+        if (e && e.preventDefault)
+            e.preventDefault();
+
         const { statement } = answers ? answers[optionSelected] : {};
+        const nextQuestion = type.startsWith('te') ?
+            questions[questionIndex].nextQuestion : (answers && answers[optionSelected] && answers[optionSelected].nextQuestion);
 
         if (!type.startsWith('te') || textAnswered)
             this.setState({
@@ -74,29 +169,45 @@ export default class Chat extends React.Component {
                     }]),
 
                 questionIndex: nextQuestion,
-                optionSelected: 0,
+                optionSelected: '0',
                 textAnswered: '',
                 loading: true
             }, this.answerEntered);
 
     }
 
+    /* this function is called when chatbot completes its loop and is passed in location */
     final = (position) => {
-        var latitude = position.coords?.latitude;
-        var longitude = position.coords?.longitude;
+        const { latitude, longitude } = (position && position.coords) || {};
+        const { chat, answers, questions } = this.state;
 
-        const { chat, answers } = this.state;
-        axios.post(ENDPOINT + '/api/post-suspection', {
+        axios.post(ENDPOINT + '/api/assessment', {
             answers,
             latitude,
             longitude
         })
             .then(response => {
-                const { incomingChats } = response.data;
-                if (incomingChats) {
+                const { incomingChats, suspect, patientId, questionIndex } = response.data;
+                if (suspect) {
                     this.setState({
-                        chat: chat.concat(incomingChats)
-                    }, this.scrollDown)
+                        suspect: true,
+                        patientId,
+                        questionIndex,
+                        chat: chat.concat(incomingChats).concat([
+                            {
+                                statement: questions[questionIndex].statement,
+                                type: 'incoming'
+                            }
+                        ]),
+                        loading: false
+                    }, this.scrollDown);
+                }
+                else {
+                    if (incomingChats) {
+                        this.setState({
+                            chat: chat.concat(incomingChats),
+                        }, this.scrollDown);
+                    }
                 }
             })
             .catch((error) => {
@@ -105,62 +216,47 @@ export default class Chat extends React.Component {
     }
 
     answerEntered = () => {
-        this.scrollDown();
         const { questionIndex, questions, chat, answers, suspect } = this.state;
 
-        if (questionIndex === 0) {
+        /* scroll because a message was just entered into chat */
+        this.scrollDown();
 
+        /* question index is 0, implies that chatbot questioning loop has completed, and final function is called */
+        if (questionIndex === 0) {
             if (suspect) {
-                navigator.geolocation.getCurrentPosition(this.final.bind(this), this.final.bind(this));
+                if (answers['17'] === '0')
+                    this.setState({
+                        chat: chat.concat([
+                            {
+                                statement: 'हम आपके परामर्श के लिए डॉक्टरों की खोज कर रहे हैं',
+                                type: 'incoming'
+                            }
+                        ])
+                    }, this.connect);
+                else {
+                    this.setState({
+                        chat: chat.concat([
+                            {
+                                statement: 'कृपया अपनी सेहत का ख़याल रखें।',
+                                type: 'incoming'
+                            }
+                        ])
+                    });
+                }
+                this.scrollDown();
             }
             else
-                axios.post(ENDPOINT + '/api/pre-assessment', {
-                    answers
-                })
-                    .then(response => {
-                        const { suspect, incomingChats, questionIndex } = response.data;
-                        if (suspect) {
-                            this.setState({
-                                suspect,
-                                chat: chat.concat(incomingChats).concat([
-                                    {
-                                        statement: questions[questionIndex].statement,
-                                        type: 'incoming'
-                                    }
-                                ]),
-                                loading: false,
-                                questionIndex
-                            }, this.scrollDown)
-                        }
-                        else if (incomingChats) {
-                            this.setState({
-                                chat: chat.concat(incomingChats)
-                            }, this.scrollDown)
-                        }
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
+                navigator.geolocation.getCurrentPosition(
+                    this.final.bind(this), this.final.bind(this)
+                );
         }
         else {
-            this.setState({
-                chat: chat.concat([
-                    {
-                        statement: questions[questionIndex].statement,
-                        type: 'incoming'
-                    }
-                ]),
-                loading: false
-            }, this.scrollDown)
+            this.enterMessageIntoChat(questions[questionIndex].statement, 'incoming');
+            this.setState({ loading: false });
         }
-    }
-
-    scrollDown = () => {
-        $("#chat-box").animate({ scrollTop: $("#chat-box")[0].scrollHeight }, 800);
     }
 
     handleChange = (event) => {
-
         const { id, value } = event.target;
 
         this.setState({
@@ -174,7 +270,7 @@ export default class Chat extends React.Component {
     }
 
     renderChat = () => {
-        const { chat, loading } = this.state;
+        const { chat, loading, incomingTyping } = this.state;
 
         return (
             <div id="chat-box" className="chat-box" style={loading ? { marginBottom: 0 } : {}}>
@@ -190,18 +286,47 @@ export default class Chat extends React.Component {
                         );
                     })
                 }
+                {/* Searching For Doctor loading... */}
+                {incomingTyping &&
+                    <p className="incoming-message" >
+                        <div class="dots">
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                            <div class="dot"></div>
+                        </div>
+                    </p>}
             </div>
         )
 
     }
 
     renderAnswers = () => {
-        const { questions, questionIndex, optionSelected, textAnswered, loading } = this.state;
+        const { questions, questionIndex, optionSelected, textAnswered, loading, doctor } = this.state;
         const { answers, type, pattern } = questions[questionIndex];
 
-        if (loading) return null;
+        if (loading)
+            return null;
 
-        if (type === 'button')
+        else if (doctor) {
+            return (
+                <div className="answer-box text-row fadeInUp" style={{ animationDelay: '1s' }}>
+                    <form onSubmit={this.sendMessage} className="message-form">
+                        <input id='textAnswered' value={textAnswered} onChange={this.handleMessageChange}
+                            type="text"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            spellCheck="false"
+                            onFocus={this.scrollDown}
+                        />
+                        <button type="submit" className="send">
+                            <Icon.Send />
+                        </button>
+                    </form>
+                </div>
+            );
+        }
+
+        else if (type === 'button') {
             return (
                 <div className="answer-box button-row">
                     {answers.map(({ value, statement }, index) => {
@@ -219,8 +344,9 @@ export default class Chat extends React.Component {
                     })}
                 </div>
             );
+        }
 
-        else if (type === 'select')
+        else if (type === 'select') {
             return (
                 <div className="answer-box select-row fadeInUp" style={{ animationDelay: '1s' }}>
                     <select id="optionSelected" value={optionSelected} onChange={this.handleChange}>
@@ -239,8 +365,9 @@ export default class Chat extends React.Component {
                     </button>
                 </div>
             );
+        }
 
-        else
+        else {
             return (
                 <div className="answer-box text-row fadeInUp" style={{ animationDelay: '1s' }}>
                     <form onSubmit={this.answer} className="message-form">
@@ -258,7 +385,7 @@ export default class Chat extends React.Component {
                     </form>
                 </div>
             );
-
+        }
     }
 
     render() {
@@ -266,15 +393,13 @@ export default class Chat extends React.Component {
 
         if (!questionsLoaded || !chatStarted)
             return (
-                <div className="Chat animate" style={{ animationDelay: '0.7s' }}>
-                    <button className="start is-green" onClick={() => {
-                        this.setState({ chatStarted: true })
-                    }}>चेकअप शुरू करें</button>
+                <div className="Chat fadeInUp" style={{ animationDelay: '0.7s' }}>
+                    <button className="start is-green" onClick={this.startChat}>डॉक्टरों द्वारा चेकउप शुरू करे</button>
                 </div>
             );
 
         return (
-            <div className="Chat animate" style={{ animationDelay: '0.7s' }}>
+            <div className="Chat fadeInUp" style={{ animationDelay: '0.7s' }}>
                 {this.renderChat()}
                 {this.renderAnswers()}
             </div>

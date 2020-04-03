@@ -36,7 +36,7 @@ function Level(props) {
   };
 
   return (
-    <div className="Level animate" style={{animationDelay: '0.8s'}}>
+    <div className="Level fadeInUp" style={{animationDelay: '0.8s'}}>
 
       <div className="level-item is-cherry">
         <h2>पुष्टीकृत</h2>
@@ -54,7 +54,7 @@ function Level(props) {
       <div className="level-item is-green">
         <h2 className="heading">उपचारित</h2>
         <h4>[{data.delta ? data.delta.recovered>=0 ? '+'+data.delta.recovered : '+0' : ''}]</h4>
-        <h1 className="title has-text-success">{data.recoveries} </h1>
+        <h1 className="title has-text-success">{data.recovered} </h1>
       </div>
 
       <div className="level-item is-gray">

@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useRef} from 'react';
-import axios from 'axios';
 import * as d3 from 'd3';
 
 function Minigraph(props) {
@@ -295,19 +294,19 @@ function Minigraph(props) {
   return (
     <div className="Minigraph">
 
-      <div className="svg-parent animate" style={{animationDelay: '0.6s'}}>
+      <div className="svg-parent fadeInUp" style={{animationDelay: '0.6s'}}>
         <svg ref={graphElement1} width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"/>
       </div>
 
-      <div className="svg-parent is-blue animate" style={{animationDelay: '0.7s'}}>
+      <div className="svg-parent is-blue fadeInUp" style={{animationDelay: '0.7s'}}>
         <svg ref={graphElement2} width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"/>
       </div>
 
-      <div className="svg-parent is-green animate" style={{animationDelay: '0.8s'}}>
+      <div className="svg-parent is-green fadeInUp" style={{animationDelay: '0.8s'}}>
         <svg ref={graphElement3} width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"/>
       </div>
 
-      <div className="svg-parent is-gray animate" style={{animationDelay: '0.9s'}}>
+      <div className="svg-parent is-gray fadeInUp" style={{animationDelay: '0.9s'}}>
         <svg ref={graphElement4} width="100" height="100" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet"/>
       </div>
 

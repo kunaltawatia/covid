@@ -2,13 +2,39 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-const cors = require('cors');
+var cors = require('cors');
+var session = require('express-session');
+const MongoStore = require('connect-mongo')(session);
+var mongoose = require('mongoose');
+
+mongoose.Promise = global.Promise;
+mongoose.connect('mongodb://localhost:27017/covid', {
+    useFindAndModify: false,
+    useUnifiedTopology: true,
+    useNewUrlParser: true
+});
+
+mongoose.connection
+    .once('open', () => console.log('Connected!'))
+    .on('error', err => console.error(err));
 
 var indexRouter = require('./routes/index');
 
 var app = express();
 
-app.use(cors({ credentials: true, origin: '*' }));
+app.use(cors());
+app.use(session({
+    store: new MongoStore({ mongooseConnection: mongoose.connection }),
+    name: 'sid',
+    saveUninitialized: false,
+    resave: false,
+    secret: 'admin',
+    cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365,
+        sameSite: true,
+        secure: false,
+    }
+}))
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

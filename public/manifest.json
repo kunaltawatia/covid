@@ -1,10 +1,10 @@
 {
-  "short_name": "COVID-19 Tracker | India",
-  "name": "COVID-19 Tracker | India",
+  "short_name": "COVID-19 सहायता पोर्टल",
+  "name": "COVID-19 सहायता पोर्टल",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
+      "src": "corona.png",
+      "sizes": "64x64",
       "type": "image/x-icon"
     }
   ],

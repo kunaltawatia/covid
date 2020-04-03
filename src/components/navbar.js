@@ -1,30 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import $ from 'jquery';
+// import $ from 'jquery';
 
 function Navbar(props) {
   const [view, setView] = useState(() => {
-    switch(window.location.pathname){
+    switch (window.location.pathname) {
+      case '/': return "Home";
       case '/links': return "Helpline";
       case '/faq': return "FAQs";
-      default: return "Home";
+      case '/acknowledgement': return 'Acknowledgement';
+      default: return "";
     }
   });
 
-  useEffect(() => {
-      var windowBottom = $(window).scrollTop() + $(window).innerHeight();
-      $(".animate").each(function () {
-        /* Check the location of each desired element */
-        var objectBottom = $(this).offset().top;
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     var windowBottom = $(window).scrollTop() + $(window).innerHeight();
+  //     $(".animate").each(function () {
+  //       /* Check the location of each desired element */
+  //       var objectBottom = $(this).offset().top;
 
-        /* If the element is completely within bounds of the window, fade it in */
-        if (objectBottom < windowBottom) { //object comes into view (scrolling down)
-          $(this).removeClass('animate').addClass('fadeInUp')
-        } else { //object goes out of view (scrolling up)
-          // if ($(this).css("opacity")==1) {$(this).fadeTo(500,0);}
-        }
-      });
-  }, [view])
+  //       /* If the element is completely within bounds of the window, fade it in */
+  //       if (objectBottom < windowBottom) { //object comes into view (scrolling down)
+  //         $(this).removeClass('animate').addClass('fadeInUp')
+  //       } else { //object goes out of view (scrolling up)
+  //         // if ($(this).css("opacity")==1) {$(this).fadeTo(500,0);}
+  //       }
+  //     });
+  //   }, 300);
+  // }, [view])
 
   if (window.location.pathname !== "/summary") {
     return (
@@ -61,7 +65,7 @@ function Navbar(props) {
               होम
             </span>
           </Link>
-
+          {/* 
           <Link
             to="/links"
             onClick={() => {
@@ -76,7 +80,7 @@ function Navbar(props) {
             >
               हेल्पलाइन
             </span>
-          </Link>
+          </Link> */}
 
           <Link
             to="/faq"
@@ -89,6 +93,20 @@ function Navbar(props) {
               style={{ animationDelay: "0.6s" }}
             >
               दिशानिर्देश
+            </span>
+          </Link>
+
+          <Link
+            to="/acknowledgement"
+            onClick={() => {
+              setView("Acknowledgement");
+            }}
+          >
+            <span
+              className={`fadeInUp ${view === "Acknowledgement" ? "focused" : ""}`}
+              style={{ animationDelay: "0.6s" }}
+            >
+              स्वीकृति
             </span>
           </Link>
 
