@@ -1,11 +1,19 @@
 var { questions } = require('../data/questions.json');
 
-function getDbValue(questionIndex, answerIndex) {
-    if (answerIndex === undefined) return '';
-
-    const { dbValue } = questions[questionIndex].answers[answerIndex];
-
-    return dbValue || '';
+function getDbValue(questionIndex, dbQuestionIndex, answers) {
+    try {
+        if (answers && answers[questionIndex + ''] === '0') {
+            if (answers[dbQuestionIndex + ''] !== undefined) {
+                return questions[
+                    dbQuestionIndex + ''
+                ].answers[
+                    answers[dbQuestionIndex + '']
+                ].dbValue || '';
+            } else return '';
+        } else return '';
+    } catch (err) {
+        return '';
+    }
 }
 
 module.exports.answersToModel = (answers, callback) => {
@@ -14,23 +22,27 @@ module.exports.answersToModel = (answers, callback) => {
         callback({});
     else {
 
-        fever = answers['4'] === '0' ? getDbValue(5, answers['5']) : '';
-        cough = answers['6'] === '0' ? getDbValue(7, answers['7']) : '';
-        shortness_of_breath = answers['8'] === '0' ? getDbValue(8, answers['8']) : '';
-        fatigue = answers['9'] === '0' ? getDbValue(9, answers['9']) : '';
-        headache = answers['10'] === '0' ? getDbValue(10, answers['10']) : '';
-        sore_throat = answers['11'] === '0' ? getDbValue(11, answers['11']) : '';
+        type = questions[4].answers[answers['4']].dbValue;
+        fever = getDbValue(5, 6, answers);
+        cough = getDbValue(7, 8, answers);
+        shortness_of_breath = getDbValue(9, 9, answers);
+        fatigue = getDbValue(10, 10, answers);
+        headache = getDbValue(11, 11, answers);
+        sore_throat = getDbValue(12, 12, answers);
 
-        international_traveller = answers['12'] === '0' ? getDbValue(13, answers['13']) : '';
-        patient_in_household = answers['14'] === '0' ? getDbValue(14, answers['14']) : '';
-        contact_with_patient = answers['15'] === '0' ? getDbValue(15, answers['15']) : '';
+        international_traveller = getDbValue(13, 14, answers);
+        patient_in_household = getDbValue(15, 15, answers);
+        contact_with_patient = getDbValue(16, 16, answers);
 
-        additional = answers['16']
+        additional = answers['17']
 
         name = answers['0']
-        gender = getDbValue(1, answers['1']);
+        gender = questions[1].answers[answers['1']].dbValue;
         age = answers['2']
         telephone = answers['3']
+
+        opd_symptoms = answers['19'] || ''
+        opd_symptoms_age = answers['20'] || ''
 
         symptomatic = (fever && true) || (cough && true) || (shortness_of_breath && true) || false;
 
@@ -54,7 +66,10 @@ module.exports.answersToModel = (answers, callback) => {
             name,
             age,
             gender,
-            telephone
+            telephone,
+            type,
+            opd_symptoms,
+            opd_symptoms_age
         });
     }
 

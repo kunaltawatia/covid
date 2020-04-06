@@ -11,6 +11,7 @@ import Acknowledgement from './components/acknowledgement';
 // import Cluster from './components/cluster';
 import FAQ from './components/faq';
 import Doctor from './components/doctor';
+import Admin from './components/admin';
 // import Banner from './components/banner';
 import axios from 'axios';
 import { ENDPOINT } from './config';
@@ -37,7 +38,7 @@ function App() {
       .catch((err) => {
         console.log(err);
       });
-  }, [1]);
+  }, []);
 
   // useEffect(() => {
   //   $(window).on("load", function () {
@@ -70,6 +71,7 @@ function App() {
             <Switch location={location}>
               <Route exact path="/" render={(props) => <Home {...props} />} />
               <Route exact path="/doctor" render={(props) => <Doctor {...props} />} />
+              <Route exact path="/admin_dashboard" render={(props) => <Admin {...props} />} />
               {/* <Route exact path="/links" render={(props) => <Links {...props} />} /> */}
               <Route exact path="/faq" render={(props) => <FAQ {...props} />} />
               <Route exact path="/acknowledgement" render={(props) => <Acknowledgement {...props} />} />

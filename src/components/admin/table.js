@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import * as Icon from 'react-feather';
 import axios from 'axios';
-import { ENDPOINT } from '../config';
+import { ENDPOINT } from '../../config';
 
 import Row from './row';
 
 function Table(props) {
-    const [patients, setPatients] = useState([]);
+    const [doctors, setDoctors] = useState([]);
     const [page, setPage] = useState(1);
     //   const [districts, setDistricts] = useState({});
     //   const [count, setCount] = useState(0);
@@ -33,26 +33,59 @@ function Table(props) {
     //     }
     //   }, [states.length]);
 
+    // useEffect(() => {
+    //     getDoctors();
+    // }, [1]);
     useEffect(() => {
-        getPatients();
-    }, [1]);
-    useEffect(() => {
-        getPatients();
+        getDoctors();
     }, [page]);
     /* add renew button */
 
-    const getPatients = () => {
+    const getDoctors = () => {
 
-        axios.get(ENDPOINT + '/api/patient-list?page=' + page)
+        axios.get(ENDPOINT + '/admin/doctor-list?page=' + page)
             .then((response) => {
-                setPatients(response.data.patients);
+                const { doctors } = response.data;
+                console.log(doctors);
+                if (doctors)
+                    setDoctors(doctors);
             })
             .catch((err) => {
                 console.log(err);
             });
     };
+
+    const deleteDoctor = (id) => {
+        axios.delete(ENDPOINT + '/admin/doctor/' + id)
+            .then((response) => {
+                getDoctors();
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
+
+    const edit = ({ _id, ...rest }) => {
+        if (_id)
+            axios.post(ENDPOINT + '/admin/doctor/' + _id, rest)
+                .then((response) => {
+                    getDoctors();
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+        else
+            axios.put(ENDPOINT + '/admin/doctor', rest)
+                .then((response) => {
+                    getDoctors();
+                })
+                .catch((err) => {
+                    console.log(err);
+                });
+    }
+
     // make a axios call every 1min
-    // setInterval(getPatients, 60 * 1000);
+    // setInterval(getDoctors, 60 * 1000);
 
     //   const doSort = (e, props) => {
     //     const totalRow = states.splice(0, 1);
@@ -90,48 +123,38 @@ function Table(props) {
     return (
         <table className="table fadeInUp" style={{ animationDelay: '1s' }}>
             <h5 className="affected-count">
-                <button onClick={getPatients} class="refresh">
+                <button onClick={getDoctors} class="refresh">
                     <Icon.RefreshCw size={10} />
                 </button>
-                Patients
+                Doctors
             </h5>
             <thead>
                 <tr>
                     <th className="state-heading" onClick={(e) => handleSort(e, props)} >
                         <div className='heading-content'>
                             <abbr title="Name">
-                                Name
+                                Username
                             </abbr>
                         </div>
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-cherry' : ''}`} title="Suspected">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'S' : 'Suspect' : 'Suspected'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-cherry' : ''}`} title="Password">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'P' : 'PWD' : 'Password'}</abbr>
                         </div>
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Fever">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'F' : 'Fev' : 'Fever'}</abbr>
-                        </div>
-                    </th>
-                    <th onClick={(e) => handleSort(e, props)}>
-                        <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-green' : ''}`} title="Cough">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'C' : 'Cgh' : 'Cough'}</abbr>
-                        </div>
-                    </th>
-                    <th onClick={(e) => handleSort(e, props)}>
-                        <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-gray' : ''}`} title="SoB">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'SoB' : 'SoB' : 'Short Breath'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Hospital">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'H' : 'HOS' : 'Hospital'}</abbr>
                         </div>
                     </th>
                 </tr>
             </thead>
 
             {
-                patients.map((patient, index) => {
+                doctors.map((doctor, index) => {
                     return (
                         <tbody>
-                            <Row key={index} patient={patient} />
+                            <Row key={index} doctor={doctor} delete={deleteDoctor} edit={edit} />
                         </tbody>
                     );
                 })
@@ -140,7 +163,17 @@ function Table(props) {
                 <button onClick={() => setPage(Math.max(1, page - 1))} className="arrow">
                     <Icon.ArrowLeft size={16} />
                 </button>
-                <button onClick={() => setPage(patients.length ? page + 1 : page)} className="arrow">
+                <button onClick={() => {
+                    setDoctors([{
+                        username: '',
+                        password: '',
+                        hospital: '',
+                        _id: false
+                    }].concat(doctors))
+                }} className="arrow">
+                    <Icon.Plus size={16} />
+                </button>
+                <button onClick={() => setPage(doctors.length ? page + 1 : page)} className="arrow">
                     <Icon.ArrowRight size={16} />
                 </button>
             </div>

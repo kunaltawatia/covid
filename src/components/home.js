@@ -14,7 +14,7 @@ import LazyLoad from 'react-lazy-load';
 import Level from './level';
 // import ChoroplethMap from './choropleth';
 // import TimeSeries from './timeseries';
-import Minigraph from './minigraph';
+// import Minigraph from './minigraph';
 // import Banner from './banner';
 import Chat from './chatbot';
 
@@ -22,13 +22,7 @@ function Home(props) {
   const [nationalStats, setNationalStats] = useState({});
   const [rajasthanStats, setRajasthanStats] = useState({});
   const [fetched, setFetched] = useState(false);
-  const [graphOption, setGraphOption] = useState(1);
-  const [lastUpdated, setLastUpdated] = useState('');
-  const [timeseries, setTimeseries] = useState([]);
   const [deltas, setDeltas] = useState([]);
-  const [timeseriesMode, setTimeseriesMode] = useState(true);
-  const [stateHighlighted, setStateHighlighted] = useState(undefined);
-  const [faqVisible, setFAQ] = useState(false);
 
   useEffect(() => {
     if (fetched === false) {
@@ -40,7 +34,7 @@ function Home(props) {
     axios.get(ENDPOINT + '/api/cases')
       .then((response) => {
         // setStates(response.data.statewise);
-        setTimeseries(response.data.cases_time_series);
+        // setTimeseries(response.data.cases_time_series);
         // setLastUpdated(formatDate(response.data.statewise[0].lastupdatedtime));
         // setDeltas(response.data.key_values[0]);
         setFetched(true);
@@ -50,20 +44,6 @@ function Home(props) {
       .catch((err) => {
         console.log(err);
       });
-  };
-
-  const formatDate = (unformattedDate) => {
-    const day = unformattedDate.slice(0, 2);
-    const month = unformattedDate.slice(3, 5);
-    const year = unformattedDate.slice(6, 10);
-    const time = unformattedDate.slice(11);
-    console.log(`${month} ${day} ${year} ${time}`);
-    return `${year}-${month}-${day}T${time}`;
-  };
-
-  const onHighlightState = (state, index) => {
-    if (!state && !index) setStateHighlighted(null);
-    else setStateHighlighted({ state, index });
   };
 
   return (
@@ -94,7 +74,6 @@ function Home(props) {
         </div>
 
         <Level data={nationalStats} deltas={deltas} />
-        <Minigraph timeseries={timeseries} animate={true} />
 
         <div className="header fadeInUp" style={{ animationDelay: '0.5s', paddingTop: 0 }}>
           <div className="header-right">

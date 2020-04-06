@@ -3,7 +3,7 @@ import * as Icon from 'react-feather';
 import $ from 'jquery';
 
 // import axios from 'axios';
-import { ENDPOINT } from '../config';
+import { ENDPOINT } from '../../config';
 
 const client = require('socket.io-client');
 
@@ -23,7 +23,7 @@ export default class Chat extends React.Component {
     sendMessage = (e) => {
         if (e && e.preventDefault) e.preventDefault();
 
-        const { user, textAnswered } = this.state;
+        const { textAnswered } = this.state;
         if (textAnswered.length) {
             this.setState({ textAnswered: '' });
             this.socket.emit('message', textAnswered);
@@ -43,9 +43,16 @@ export default class Chat extends React.Component {
     }
 
     connect = () => {
-        const { username } = this.props;
+        const { username, hospital } = this.props;
 
-        this.socket = client(ENDPOINT, { path: '/app_chat', query: { type: 'doctor', username } });
+        this.socket = client(ENDPOINT, {
+            path: '/app_chat',
+            query: {
+                type: 'doctor',
+                username,
+                hospital
+            }
+        });
 
         this.socket.on('userAlloted', (user) => {
             console.log(user);
@@ -59,7 +66,7 @@ export default class Chat extends React.Component {
             let { chat } = JSON.parse(data);
             if (chat)
                 this.setState({
-                    chat: chat.slice(0, chat.length - 1).map(({ statement, type }) => {
+                    chat: chat.map(({ statement, type }) => {
                         return {
                             statement,
                             type: type === 'incoming' ? 'outgoing' : 'incoming'

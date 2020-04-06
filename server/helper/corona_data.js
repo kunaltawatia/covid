@@ -13,8 +13,8 @@ setInterval(() => {
                 cases_time_series: result.cases_time_series
             }
 
-            fs.writeFile(path.join(__dirname, '../data/cases.json'), JSON.stringify(obj), 'utf8', (err) => {
-            })
+            // fs.writeFile(path.join(__dirname, '../data/cases.json'), JSON.stringify(obj), 'utf8', (err) => {
+            // })
         })
         .catch(err => console.error(err));
 }, 10 * 60 * 1000);

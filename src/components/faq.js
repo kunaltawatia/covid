@@ -4,12 +4,12 @@ import { ENDPOINT } from '../config';
 import LazyLoad from 'react-lazy-load';
 // import $ from 'jquery';
 
-function FAQ(props) {
+function FAQ() {
   const [faq, setFaq] = useState([]);
 
   useEffect(() => {
     getFAQs();
-  }, [1]);
+  }, []);
 
   // useEffect(()=>{
   //   var windowBottom = $(window).scrollTop() + $(window).innerHeight();
@@ -40,7 +40,7 @@ function FAQ(props) {
     <div className="FAQ">
       <div className="fadeInUp faq">
         <LazyLoad offsetVertical={200}>
-          <img src="/images/mohfw-logo.jpg" className="mohfw-logo" />
+          <img src="/images/mohfw-logo.jpg" className="mohfw-logo" alt={'MOHFW logo'}/>
         </LazyLoad>
         <h3>द्वारा जनहित में जारी</h3>
         <h1>सामान्य प्रश्न</h1>

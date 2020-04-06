@@ -9,9 +9,25 @@ const DoctorSchema = new Schema({
         required: true,
         unique: true
     },
-    password: String,
-    attending: String,
-    chat_id: String
+    password: {
+        type: String,
+        required: true,
+        minlength: 1
+    },
+    hospital: {
+        type: String,
+        required: true,
+        minlength: 1
+    },
+    attending: {
+        type: String,
+        default: ''
+    },
+    chat_id: {
+        type: String,
+        default: ''
+    },
+    created_at: Number
 });
 
 // create the model

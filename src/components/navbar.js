@@ -90,7 +90,7 @@ function Navbar(props) {
           >
             <span
               className={`fadeInUp ${view === "FAQs" ? "focused" : ""}`}
-              style={{ animationDelay: "0.6s" }}
+              style={{ animationDelay: "0.4s" }}
             >
               दिशानिर्देश
             </span>

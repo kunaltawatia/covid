@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+const Chat = new Schema({
+    statement: String,
+    type: String
+});
+
 // create a schema
 const PatientSchema = new Schema({
     fever: String,
@@ -25,7 +30,12 @@ const PatientSchema = new Schema({
     ip: String,
     created_at: Number,
     chat_id: String,
-    doctor: String
+    doctor: String,
+    hospital: String,
+    type: String,
+    opd_symptoms: String,
+    opd_symptoms_age: String,
+    chat: [Chat]
 });
 
 // create the model
