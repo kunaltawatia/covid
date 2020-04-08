@@ -27,7 +27,12 @@ const DoctorSchema = new Schema({
         type: String,
         default: ''
     },
-    created_at: Number
+    created_at: Number,
+    name: String,
+    department: String,
+    email: String,
+    telephone: Number,
+    post: String
 });
 
 // create the model

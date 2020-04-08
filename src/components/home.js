@@ -53,7 +53,7 @@ function Home(props) {
         <div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
           <div className="header-mid">
             <div className="titles">
-              <h1>COVID-19 सहायता पोर्टल</h1>
+              <h1>CoViDoc टेली-कंसल्टेंसी पोर्टल</h1>
               <h2>एम्स जोधपुर - आईआईटी जोधपुर की संयुक्त पहल</h2>
             </div>
           </div>

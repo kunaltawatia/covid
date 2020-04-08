@@ -117,7 +117,7 @@ class Doctor extends React.Component {
 
         return (
             <div className="Home">
-                <div className="home-left">
+                <div>
                     <form onSubmit={this.logout} className="login-form fadeInUp">
                         <p>{error}</p>
                         <button onClick={this.logout} className="logout fadeInUp" style={{ animationDelay: '0.8s' }}>Logout</button>

@@ -106,22 +106,22 @@ function Table(props) {
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-cherry' : ''}`} title="Suspected">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'S' : 'Suspect' : 'Suspected'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-cherry' : ''}`} title="Telephone">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'T' : 'Tel' : 'Telephone'}</abbr>
                         </div>
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Fever">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'F' : 'Fev' : 'Fever'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Age">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'A' : 'Age' : 'Age'}</abbr>
                         </div>
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-green' : ''}`} title="Cough">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'C' : 'Cgh' : 'Cough'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-green' : ''}`} title="Gender">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'G' : 'Gen' : 'Gender'}</abbr>
                         </div>
                     </th>
                     <th onClick={(e) => handleSort(e, props)}>
                         <div className='heading-content'>
-                            <abbr className={`${window.innerWidth <= 769 ? 'is-gray' : ''}`} title="SoB">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'SoB' : 'SoB' : 'Short Breath'}</abbr>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-gray' : ''}`} title="Type">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'T' : 'Typ' : 'Type'}</abbr>
                         </div>
                     </th>
                 </tr>

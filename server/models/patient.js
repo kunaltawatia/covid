@@ -9,12 +9,19 @@ const Chat = new Schema({
 
 // create a schema
 const PatientSchema = new Schema({
+    _id: {
+        type: String,
+        unique: true,
+        required: true
+    },
     fever: String,
     cough: String,
     shortness_of_breath: String,
     fatigue: String,
     headache: String,
     sore_throat: String,
+    change_in_smell: String,
+    change_in_taste: String,
     international_traveller: String,
     patient_in_household: String,
     contact_with_atient: String,
@@ -36,7 +43,7 @@ const PatientSchema = new Schema({
     opd_symptoms: String,
     opd_symptoms_age: String,
     chat: [Chat]
-});
+}, { _id: false });
 
 // create the model
 const Patient = mongoose.model('Patient', PatientSchema, 'patients');

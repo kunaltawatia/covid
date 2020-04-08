@@ -32,31 +32,33 @@ function Row(props) {
             {!patient.delta.confirmed==0 && <Icon.ArrowUp/>}
             {patient.delta.confirmed > 0 ? `${patient.delta.confirmed}` : ''}
           </span> */}
-          {patient.suspect? 'YES': '-'}
+          <a href={`tel:${patient.telephone}`} className="link" target="_noblank">
+          {patient.telephone}
+          </a>
         </td>
-        <td style={{color: patient.fever ? 'inherit' : '#B5B5B5' }}>
-        {/*<span className="deltas" style={{color: '#007bff'}}>
+        <td style={{ color: '#B5B5B5' }}>
+          {/*<span className="deltas" style={{color: '#007bff'}}>
             {!patient.delta.active==0 && <Icon.ArrowUp/>}
             {patient.delta.active>0 ? `${patient.delta.active}` : ''}
           </span>*/}
-          {patient.fever || '-'}
-        {/* {parseInt(patient.active)===0 ? '-' : patient.active} */}
+            {patient.age}
+          {/* {parseInt(patient.active)===0 ? '-' : patient.active} */}
         </td>
-        <td style={{color: patient.cough ? 'inherit' : '#B5B5B5' }}>
-        {/*<span className="deltas" style={{color: '#28a745'}}>
+        <td style={{ color: '#B5B5B5' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
             {!patient.delta.recovered==0 && <Icon.ArrowUp/>}
             {patient.delta.recovered > 0 ? `${patient.delta.recovered}` : ''}
           </span>*/}
-        {/* {parseInt(patient.recovered)===0 ? '-' : patient.recovered} */}
-          {patient.cough || '-'}
+          {/* {parseInt(patient.recovered)===0 ? '-' : patient.recovered} */}
+          {patient.gender}
         </td>
-        <td style={{color: patient.shortness_of_breath ? 'inherit' : '#B5B5B5' }}>
-        {/*<span className="deltas" style={{color: '#6c757d'}}>
+        <td style={{ color: '#B5B5B5' }}>
+          {/*<span className="deltas" style={{color: '#6c757d'}}>
             {!patient.delta.deaths==0 && <Icon.ArrowUp/>}
             {patient.delta.deaths>0 ? `${patient.delta.deaths}` : ''}
           </span>*/}
-        {/* {parseInt(patient.deaths)===0 ? '-' : patient.deaths} */}
-          {patient.shortness_of_breath || '-'}
+          {/* {parseInt(patient.deaths)===0 ? '-' : patient.deaths} */}
+          {patient.type}
         </td>
       </tr>
 
@@ -86,14 +88,14 @@ function Row(props) {
 
       {
         Object.keys(patient).map((dataKey, index) => {
-            return (
-              <tr key={index} className={`district`} style={{display: reveal && !props.total ? '' : 'none'}}>
-                <td style={{fontWeight: 600}}>{dataKey}</td>
-                <td>{patient[dataKey] ? patient[dataKey] === true ? 'Yes' : patient[dataKey] : '-'}</td>
-              </tr>
-            );
+          return (
+            <tr key={index} className={`district`} style={{ display: reveal && !props.total ? '' : 'none' }}>
+              <td style={{ fontWeight: 600 }}>{dataKey}</td>
+              <td>{patient[dataKey] ? patient[dataKey] === true ? 'Yes' : patient[dataKey] : '-'}</td>
+            </tr>
+          );
         })
-      } 
+      }
 
       <tr className={`spacer`} style={{ display: reveal && !props.total ? '' : 'none' }}>
         <td></td>

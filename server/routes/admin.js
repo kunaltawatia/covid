@@ -35,13 +35,18 @@ router.use((req, res, next) => {
 });
 
 router.post('/doctor/:id', (req, res) => {
-    const { username, password, hospital } = req.body;
+    const { username, password, hospital, telephone, email, name, post, department } = req.body;
     const { id } = req.params;
     Doctor.findByIdAndUpdate(id, {
         $set: {
             username,
             password,
-            hospital
+            hospital,
+            telephone,
+            email,
+            name,
+            post,
+            department
         }
     }, (err, doctor) => {
         if (err) console.error(err);
@@ -58,8 +63,18 @@ router.delete('/doctor/:id', (req, res) => {
 })
 
 router.put('/doctor', (req, res) => {
-    const { password, username, hospital } = req.body;
-    Doctor.create({ username, hospital, password, created_at: Date.now() }, (err, doctor) => {
+    const { username, password, hospital, telephone, email, name, post, department } = req.body;
+    Doctor.create({
+        username,
+        password,
+        hospital,
+        telephone,
+        email,
+        name,
+        post,
+        department,
+        created_at: Date.now()
+    }, (err, doctor) => {
         if (err) console.error(err);
         res.json({});
     })

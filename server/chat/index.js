@@ -110,17 +110,17 @@ io.on('connection', function (socket) {
     online_user_count = online_user_count + 1;
     io.emit('onlineUsers', online_user_count);
 
-    const { type, patientId, username, hospital } = socket.handshake.query;
-    console.log(type, socket.id, patientId, username, hospital, 'connected');
+    const { type, patientId, username } = socket.handshake.query;
+    console.log(type, socket.id, patientId, username, 'connected');
 
-    if (type === 'doctor' && username && hospital) {
+    if (type === 'doctor' && username) {
 
         Doctor.findOneAndUpdate({ username }, { $set: { chat_id: socket.id } }, (err, doctor) => {
             if (err || !doctor)
                 return socket.disconnect();
             else {
                 if (!doctor.attending)
-                    doctorFree(username, hospital);
+                    doctorFree(username, doctor.hospital);
                 else {
                     setTimeout(() => {
                         getPatientSocketById(doctor.attending, (patient_chat_id) => {
@@ -131,7 +131,7 @@ io.on('connection', function (socket) {
                             else
                                 Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doc) => {
                                     if (err) return console.error(err);
-                                    doctorFree(username, hospital);
+                                    doctorFree(username, doctor.hospital);
                                 })
                         });
                     }, 2000);
@@ -139,17 +139,17 @@ io.on('connection', function (socket) {
             }
         });
     }
-    else if (type === 'patient' && patientId && hospital) {
+    else if (type === 'patient' && patientId) {
         socket.emit('message', 'हम आपके परामर्श के लिए डॉक्टरों की खोज कर रहे हैं')
         Patient.findByIdAndUpdate(patientId, { $set: { chat_id: socket.id } }, (err, patient) => {
             if (err || !patient)
                 return socket.disconnect();
             else {
-                const { doctor } = patient;
+                const { doctor, hospital } = patient;
                 if (doctor)
-                    enterPatient(patientId, hospital);
-                else {
                     enterPatient(patientId, hospital, doctor);
+                else {
+                    enterPatient(patientId, hospital);
                 }
             }
         });
@@ -161,7 +161,6 @@ io.on('connection', function (socket) {
     /* from doctor to patient */
     socket.on('disconnectUser', () => {
         getDoctorsPatient(username, patient_chat_id => {
-            disconnectPatient(patient_chat_id);
             socket.to(patient_chat_id).emit('message', 'आपसे डॉक्टर ने बात रद्द करदी है');
             socket.to(patient_chat_id).emit('inactivity');
         });
@@ -170,8 +169,30 @@ io.on('connection', function (socket) {
 
         // Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doctor) => {
         //     if (err || !doctor) return console.error(err);
-        //     doctorFree(doctor.username, hospital);
+        //     doctorFree(doctor.username, doctor.hospital);
         // });
+
+    });
+
+    socket.on('referUser', doctor_username => {
+        getDoctorsPatient(username, patient_chat_id => {
+            socket.to(patient_chat_id).emit('message', 'आपके परामर्श को किसी अन्य चिकित्सक को भेजा जाता है');
+            socket.to(patient_chat_id).emit('message', 'हम दूसरे डॉक्टर की प्रतीक्षा कर रहे हैं');
+            socket.to(patient_chat_id).emit('referUser');
+        });
+
+        socket.emit('userDisconnected');
+
+        Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doctor) => {
+            if (err || !doctor) return console.error(err);
+            Patient.findByIdAndUpdate(doctor.attending, { $set: { doctor: doctor_username } }, (err, patient) => {
+                if (err || !patient) return console.error(err);
+                setTimeout(() => {
+                    enterPatient(patient._id, patient.hospital, doctor_username);
+                    doctorFree(doctor.username, doctor.hospital);
+                }, 1000);
+            })
+        });
 
     });
 
@@ -221,7 +242,7 @@ io.on('connection', function (socket) {
     socket.on('disconnect', () => {
         console.log(type, socket.id, patientId, username, 'disconnected');
 
-        if (type === 'patient' && hospital && patientId) {
+        if (type === 'patient' && patientId) {
             getPatientsDoctor(patientId, doctor_chat_id => {
 
                 io.to(doctor_chat_id).emit('userDisconnected');
@@ -229,16 +250,15 @@ io.on('connection', function (socket) {
                 setTimeout(() => {
                     Doctor.findOneAndUpdate({ chat_id: doctor_chat_id, attending: patientId }, { $set: { attending: '' } }, (err, doctor) => {
                         if (err || !doctor) return console.error(err);
-                        doctorFree(doctor.username, hospital);
+                        doctorFree(doctor.username, doctor.hospital);
                     });
                 }, 2000);
             });
 
             disconnectPatient(patientId);
         }
-        else if (type === 'doctor' && hospital && username) {
+        else if (type === 'doctor' && username) {
             getDoctorsPatient(username, patient_chat_id => {
-                disconnectPatient(patient_chat_id);
                 socket.to(patient_chat_id).emit('message', 'आपसे डॉक्टर ने बात रद्द करदी है');
                 socket.to(patient_chat_id).emit('inactivity');
             });

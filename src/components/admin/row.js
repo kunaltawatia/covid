@@ -6,6 +6,11 @@ function Row(props) {
   const [username, setUsername] = useState(props.doctor.username);
   const [password, setPassword] = useState(props.doctor.password);
   const [hospital, setHospital] = useState(props.doctor.hospital);
+  const [name,setName] = useState(props.doctor.name);
+  const [email,setEmail] = useState(props.doctor.email);
+  const [telephone,setTelephone] = useState(props.doctor.telephone);
+  const [post,setPost] = useState(props.doctor.post);
+  const [department,setDepartment] = useState(props.doctor.department);
   const [reveal, setReveal] = useState(false);
   const [editing, setEditing] = useState(props.doctor._id ? false : true);
 
@@ -14,6 +19,11 @@ function Row(props) {
     setUsername(props.doctor.username);
     setHospital(props.doctor.hospital);
     setPassword(props.doctor.password);
+    setName(props.doctor.name);
+    setEmail(props.doctor.email);
+    setTelephone(props.doctor.telephone);
+    setPost(props.doctor.post);
+    setDepartment(props.doctor.department);
     setEditing(props.doctor._id ? false : true);
   }, [props.doctor]);
 
@@ -72,6 +82,81 @@ function Row(props) {
               doctor.hospital
           }
         </td>
+        <td style={{ color: 'inherit', textTransform: 'none' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
+            {!doctor.delta.recovered==0 && <Icon.ArrowUp/>}
+            {doctor.delta.recovered > 0 ? `${doctor.delta.recovered}` : ''}
+          </span>*/}
+          {/* {parseInt(doctor.recovered)===0 ? '-' : doctor.recovered} */}
+          {
+            editing ?
+              <input value={telephone} onChange={(e) => {
+                setTelephone(e.target.value);
+              }}></input>
+              :
+              doctor.telephone
+          }
+        </td>
+        <td style={{ color: 'inherit', textTransform: 'none' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
+            {!doctor.delta.recovered==0 && <Icon.ArrowUp/>}
+            {doctor.delta.recovered > 0 ? `${doctor.delta.recovered}` : ''}
+          </span>*/}
+          {/* {parseInt(doctor.recovered)===0 ? '-' : doctor.recovered} */}
+          {
+            editing ?
+              <input value={email} onChange={(e) => {
+                setEmail(e.target.value);
+              }}></input>
+              :
+              doctor.email
+          }
+        </td>
+        <td style={{ color: 'inherit', textTransform: 'none' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
+            {!doctor.delta.recovered==0 && <Icon.ArrowUp/>}
+            {doctor.delta.recovered > 0 ? `${doctor.delta.recovered}` : ''}
+          </span>*/}
+          {/* {parseInt(doctor.recovered)===0 ? '-' : doctor.recovered} */}
+          {
+            editing ?
+              <input value={name} onChange={(e) => {
+                setName(e.target.value);
+              }}></input>
+              :
+              doctor.name
+          }
+        </td>
+        <td style={{ color: 'inherit', textTransform: 'none' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
+            {!doctor.delta.recovered==0 && <Icon.ArrowUp/>}
+            {doctor.delta.recovered > 0 ? `${doctor.delta.recovered}` : ''}
+          </span>*/}
+          {/* {parseInt(doctor.recovered)===0 ? '-' : doctor.recovered} */}
+          {
+            editing ?
+              <input value={department} onChange={(e) => {
+                setDepartment(e.target.value);
+              }}></input>
+              :
+              doctor.department
+          }
+        </td>
+        <td style={{ color: 'inherit', textTransform: 'none' }}>
+          {/*<span className="deltas" style={{color: '#28a745'}}>
+            {!doctor.delta.recovered==0 && <Icon.ArrowUp/>}
+            {doctor.delta.recovered > 0 ? `${doctor.delta.recovered}` : ''}
+          </span>*/}
+          {/* {parseInt(doctor.recovered)===0 ? '-' : doctor.recovered} */}
+          {
+            editing ?
+              <input value={post} onChange={(e) => {
+                setPost(e.target.value);
+              }}></input>
+              :
+              doctor.post
+          }
+        </td>
       </tr>
       <tr className={`spacer`} style={{ display: reveal && !props.total ? '' : 'none' }}>
         <td></td>
@@ -120,7 +205,12 @@ function Row(props) {
               ...doctor,
               username,
               password,
-              hospital
+              hospital,
+              telephone,
+              email,
+              name,
+              department,
+              post
             }); setEditing(false);
           }} style={{ background: 'none', padding: 0 }}>
             <Icon.Save size={16} />

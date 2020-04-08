@@ -2,7 +2,7 @@ var express = require('express');
 var fs = require('fs');
 var path = require('path');
 
-var { answersToModel } = require('../helper');
+var { answersToModel, getId } = require('../helper');
 var authenticate = require('../helper/auth');
 
 var { questions } = require('../data/questions.json');
@@ -35,139 +35,102 @@ router.get('/hits', (req, res) => {
 
 /* Patient */
 router.post('/assessment', (req, res) => {
+  const { answers, latitude, longitude, chat } = req.body;
+  const oldPatient = answers['24'] === '0' ? getId(answers['22'], answers['23']) : null;
 
-  const { answers, latitude, longitude, hospital, chat } = req.body;
+  /* add emojis */
 
-  answersToModel(answers, (model) => {
-    Patient.create({
-      ...model,
-      latitude,
-      longitude,
-      ip: req.headers['x-real-ip'] || req.ip,
-      created_at: Date.now(),
-      chat_id: '',
-      doctor: '',
-      hospital,
-      chat
-    }, (err, patient) => {
-
-      if (err) return res.json({ error: true });
-
-      const { suspect, _id, type } = patient;
-
-      req.session.patientId = patient;
-
-      res.json({
-        questionIndex: 18,
+  if (oldPatient) {
+    Patient.findById(oldPatient, (err, patient) => {
+      if (err || !patient) return res.json({
+        incomingChats: [
+          {
+            statement: 'हम आपके पिछले रिकॉर्ड नहीं ढूंढ पा रहे हैं',
+            type: 'incoming'
+          }
+        ]
+      });
+        const { suspect, _id, type } = patient;
+        res.json({
+        connectToDoctor: suspect || type === 'OPD',
         patientId: _id,
-        suspect: suspect || type === 'OPD',
-        incomingChats: suspect ?
-          [
-            {
-              statement: 'हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे',
-              type: 'incoming'
-            }
-          ]
-          :
-          type === 'OPD' ?
-            []
-            :
+        incomingChats: patient.chat,
+        question: questions[questions.length - 1]
+      });
+    })
+  }
+  else
+    answersToModel(answers, (model) => {
+      const { name, telephone } = model;
+      Patient.create({
+        _id: getId(name, telephone),
+        ...model,
+        latitude,
+        longitude,
+        ip: req.headers['x-real-ip'] || req.ip,
+        created_at: Date.now(),
+        chat_id: '',
+        doctor: '',
+        chat: chat.slice(4)
+      }, (err, patient) => {
+
+        if (err) {
+          console.error(err)
+          return res.json({ incomingChats: [] });
+        }
+
+        const { suspect, _id, type } = patient;
+
+        req.session.patientId = patient;
+
+        res.json({
+          question: questions[questions.length - 1],
+          patientId: _id,
+          connectToDoctor: suspect || type === 'OPD',
+          incomingChats: suspect ?
             [
               {
-                statement: 'आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)',
-                type: 'incoming'
-              },
-              {
-                statement: 'कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें',
-                type: 'incoming'
-              },
-              {
-                statement: 'धन्यवाद',
+                statement: 'हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे',
                 type: 'incoming'
               }
             ]
-      });
-    })
-  });
+            :
+            type === 'OPD' ?
+              []
+              :
+              [
+                {
+                  statement: 'आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)',
+                  type: 'incoming'
+                },
+                {
+                  statement: 'कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें',
+                  type: 'incoming'
+                },
+                {
+                  statement: 'धन्यवाद',
+                  type: 'incoming'
+                }
+              ]
+        });
+      })
+    });
 })
 
 router.get('/questions', (req, res) => {
   /* doctor's availability status and welcome message */
-  Doctor.find().distinct('hospital', (err, hospitals) => {
-    if (err || !hospitals) return res.json({});
-
-    const { patientId } = req.session;
-
-    if (patientId) {
-      Patient.findById(patientId, (err, patient) => {
-        if (err || !patient || (!patient.suspect && patient.type !== 'OPD')) {
-          res.json({
-            questions,
-            incomingChats: [
-              {
-                statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
-                type: 'incoming'
-              },
-              {
-                statement: 'आपका स्वागत है',
-                type: 'incoming'
-              }
-            ],
-            hospitals: hospitals.map((hospital, value) => {
-              return {
-                hospital,
-                value
-              }
-            })
-          })
-        }
-        else {
-          const { chat, hospital, _id } = patient;
-          res.json({
-            questions,
-            incomingChats: [
-              {
-                statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
-                type: 'incoming'
-              },
-              {
-                statement: 'आपका स्वागत है',
-                type: 'incoming'
-              }
-            ],
-            hospitals: hospitals.map((hospital, value) => {
-              return {
-                hospital,
-                value
-              }
-            }),
-            chat,
-            hospital,
-            patientId: _id
-          })
-        }
-      });
-    }
-    else
-      res.json({
-        questions,
-        incomingChats: [
-          {
-            statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
-            type: 'incoming'
-          },
-          {
-            statement: 'आपका स्वागत है',
-            type: 'incoming'
-          }
-        ],
-        hospitals: hospitals.map((hospital, value) => {
-          return {
-            hospital,
-            value
-          }
-        })
-      })
+  res.json({
+    questions,
+    incomingChats: [
+      {
+        statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
+        type: 'incoming'
+      },
+      {
+        statement: 'आपका स्वागत है',
+        type: 'incoming'
+      }
+    ]
   });
 })
 
@@ -188,6 +151,16 @@ router.get('/patient-list', authenticate, (req, res) => {
   })
 });
 
+router.get('/doctor-list', authenticate, (req, res) => {
+  const { hospital, username } = req.user;
+  Doctor.find({ hospital, username: { $ne: username } }, (err, doctors) => {
+    if (err) return res.json({ error: true });
+    res.json({
+      doctors
+    })
+  })
+});
+
 router.get('/logout', authenticate, (req, res) => {
   // req.session.destroy();
   req.session.username = null;
@@ -196,7 +169,6 @@ router.get('/logout', authenticate, (req, res) => {
 
 router.post('/login', authenticate, (req, res) => {
   const { username, hospital } = req.user;
-
   res.json({ login: true, username, hospital });
 });
 

@@ -17,14 +17,16 @@ authenticate = async (req, res, next) => {
     }
     else {
         const { username, password } = req.body;
-        const doctor = await Doctor.findOne({ username, password });
-        if (doctor) {
+        console.log(username, password);
+        Doctor.findOne({ username, password }, (err, doctor) => {
+            if (err || !doctor) {
+                console.error(err);
+                return res.json({});
+            }
             req.session.username = username;
             req.user = doctor._doc;
             next();
-        }
-        else
-            res.json({});
+        });
     }
 }
 

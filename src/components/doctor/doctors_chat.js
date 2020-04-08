@@ -2,7 +2,7 @@ import React from 'react';
 import * as Icon from 'react-feather';
 import $ from 'jquery';
 
-// import axios from 'axios';
+import axios from 'axios';
 import { ENDPOINT } from '../../config';
 
 const client = require('socket.io-client');
@@ -15,10 +15,26 @@ export default class Chat extends React.Component {
         user: null,
         incomingTyping: false,
         chat: [],
-        textAnswered: ''
+        textAnswered: '',
+        actionsReveal: false,
+        doctors: [],
+        doctorSelected: ''
     };
 
     socket = null
+
+    componentDidMount() {
+        axios.get(ENDPOINT + '/api/doctor-list')
+            .then((response) => {
+                const { doctors } = response.data;
+                if (doctors) {
+                    this.setState({ doctors });
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
 
     sendMessage = (e) => {
         if (e && e.preventDefault) e.preventDefault();
@@ -112,6 +128,11 @@ export default class Chat extends React.Component {
         this.socket.emit('disconnectUser');
     }
 
+    referUser = () => {
+        const { doctorSelected } = this.state;
+        this.socket.emit('referUser', doctorSelected);
+    }
+
     componentWillUnmount() {
         if (this.socket)
             this.socket.disconnect();
@@ -132,6 +153,14 @@ export default class Chat extends React.Component {
             }
         }
 
+    }
+
+    handleChange = (event) => {
+        const { id, value } = event.target;
+
+        this.setState({
+            [id]: value
+        });
     }
 
     renderChat = () => {
@@ -188,6 +217,44 @@ export default class Chat extends React.Component {
         )
     }
 
+    renderActions = () => {
+        const { actionsReveal, doctors, doctorSelected } = this.state;
+
+        if (!actionsReveal)
+            return (
+                <div className="chat-actions">
+                    <button onClick={() => { this.setState({ actionsReveal: true, doctorSelected: doctors[0].username }) }}>
+                        <Icon.ArrowRight />
+                    </button>
+                </div>
+            )
+
+        return (
+            <div className="chat-actions expand">
+                <button onClick={() => { this.setState({ actionsReveal: false }) }}>
+                    <Icon.ArrowDown />
+                </button>
+                <div className="select-row fadeInUp" style={{ animationDelay: '0.2s' }}>
+                    <label>Refer to:</label>
+                    <select id="doctorSelected" value={doctorSelected} onChange={this.handleChange}>
+                        {
+                            doctors.map(({ username, name, post }) => {
+                                return (
+                                    <option value={username}>
+                                        {name}, {post}
+                                    </option>
+                                )
+                            })
+                        }
+                    </select>
+                    <button className="send" onClick={this.referUser}>
+                        <Icon.Send />
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
     render() {
         const { user, chatStarted } = this.state;
 
@@ -210,12 +277,13 @@ export default class Chat extends React.Component {
             );
 
         return (
-            <div className="Chat fadeInUp" style={{ animationDelay: '0.7s' }}>
+            <div className="Chat fadeInUp" style={{ animationDelay: '0.7s', marginBottom: '8rem' }}>
                 {user ?
                     <button className="close-icon" onClick={this.disconnectUser}><Icon.XCircle /></button>
                     : null}
                 {this.renderChat()}
                 {this.renderAnswers()}
+                {user && this.renderActions()}
             </div>
         )
     }

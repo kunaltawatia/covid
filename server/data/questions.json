@@ -1,11 +1,43 @@
 {
     "questions": [
         {
+            "id": 24,
+            "statement": "क्या आप पिछले परामर्श को जारी रखना चाहते हैं",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 22,
+                    "value": 0,
+                    "statement": "हाँ"
+                },
+                {
+                    "nextQuestion": 25,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "id": 22,
+            "statement": "आपका शुभ नाम?",
+            "type": "text",
+            "nextQuestion": 23
+        },
+        {
+            "id": 23,
+            "statement": "आपका संपर्क नंबर?",
+            "type": "tel",
+            "nextQuestion": 0,
+            "pattern": "[0-9]{10}"
+        },
+        {
+            "id": 21,
             "statement": "आपका शुभ नाम?",
             "type": "text",
             "nextQuestion": 1
         },
         {
+            "id": 1,
             "statement": "आपका लिंग क्या है?",
             "type": "button",
             "answers": [
@@ -30,18 +62,34 @@
             ]
         },
         {
+            "id": 2,
             "statement": "आपकी उम्र?",
             "type": "tel",
             "nextQuestion": 3,
             "pattern": "[0-9]{1,3}"
         },
         {
+            "id": 3,
             "statement": "आपका संपर्क नंबर?",
             "type": "tel",
             "nextQuestion": 4,
             "pattern": "[0-9]{10}"
         },
         {
+            "id": 25,
+            "statement": "अस्पताल चुनकर चेकअप शुरू करे",
+            "type": "select",
+            "answers": [
+                {
+                    "nextQuestion": 21,
+                    "value": 0,
+                    "statement": "AIIMS Jodhpur",
+                    "dbValue": "AIIMS Jodhpur"
+                }
+            ]
+        },
+        {
+            "id": 4,
             "statement": "अपना विकल्प चुनें",
             "type": "button",
             "answers": [
@@ -60,6 +108,7 @@
             ]
         },
         {
+            "id": 5,
             "statement": "क्या आपको बुखार है?",
             "type": "button",
             "answers": [
@@ -76,6 +125,7 @@
             ]
         },
         {
+            "id": 6,
             "statement": "वर्तमान में आपके शरीर का ताप क्या है?",
             "type": "select",
             "answers": [
@@ -112,6 +162,7 @@
             ]
         },
         {
+            "id": 7,
             "statement": "क्या आपको खासी है?",
             "type": "button",
             "answers": [
@@ -128,6 +179,7 @@
             ]
         },
         {
+            "id": 8,
             "statement": "क्या आपको खांसते वक्त बलगम की भी शिकायत है?",
             "type": "button",
             "answers": [
@@ -146,6 +198,7 @@
             ]
         },
         {
+            "id": 9,
             "statement": "सांस लेने में कोई तकलीफ?",
             "type": "button",
             "answers": [
@@ -163,6 +216,7 @@
             ]
         },
         {
+            "id": 10,
             "statement": "क्या आपको शरीर में थकान या दर्द की भी शिकायत है?",
             "type": "button",
             "answers": [
@@ -180,6 +234,7 @@
             ]
         },
         {
+            "id": 11,
             "statement": "सिर दर्द की तकलीफ?",
             "type": "button",
             "answers": [
@@ -197,23 +252,25 @@
             ]
         },
         {
+            "id": 12,
             "statement": "गले में खराश?",
             "type": "button",
             "answers": [
                 {
-                    "nextQuestion": 13,
+                    "nextQuestion": 26,
                     "value": 0,
                     "statement": "हाँ",
                     "dbValue": "Yes"
                 },
                 {
-                    "nextQuestion": 13,
+                    "nextQuestion": 26,
                     "value": 1,
                     "statement": "नहीं"
                 }
             ]
         },
         {
+            "id": 13,
             "statement": "क्या आपने पिछले 14 दिनों में कोई अंतरराष्ट्रीय यात्रा की है?",
             "type": "button",
             "answers": [
@@ -230,6 +287,7 @@
             ]
         },
         {
+            "id": 14,
             "statement": "कितने दिन पहले?",
             "type": "select",
             "answers": [
@@ -326,6 +384,7 @@
             ]
         },
         {
+            "id": 15,
             "statement": "क्या आपके घर में कोई इस नए कोरोना वायरस से संक्रमित है?",
             "type": "button",
             "answers": [
@@ -343,6 +402,7 @@
             ]
         },
         {
+            "id": 16,
             "statement": "क्या आप पिछले 14 दिनों में COVID-19 के सकारात्मक पाए गए किसी व्यक्ति के निकट संपर्क में थे?",
             "type": "button",
             "answers": [
@@ -360,11 +420,61 @@
             ]
         },
         {
+            "id": 17,
             "statement": "क्या आप उपरोक्त लक्षणों के अलावा भी किसी अन्य लक्षण का सामना कर रहे हैं?",
             "type": "text",
             "nextQuestion": 0
         },
         {
+            "id": 19,
+            "statement": "आप अपनी तकलीफ / दिख रहे लक्षण बताये?",
+            "type": "text",
+            "nextQuestion": 20
+        },
+        {
+            "id": 20,
+            "statement": "आपको कितने दिनों से ये तकलीफ है?",
+            "type": "text",
+            "nextQuestion": 0
+        },
+        {
+            "id": 26,
+            "statement": "क्या आपके खाने के स्वाद में कोई बदलाव आया है?",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 27,
+                    "value": 0,
+                    "statement": "हाँ",
+                    "dbValue": "Yes"
+                },
+                {
+                    "nextQuestion": 27,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "id": 27,
+            "statement": "क्या आपने अपनी नाक की क्षमता में कोई बदलाव महसूस किया है",
+            "type": "button",
+            "answers": [
+                {
+                    "nextQuestion": 13,
+                    "value": 0,
+                    "statement": "हाँ",
+                    "dbValue": "Yes"
+                },
+                {
+                    "nextQuestion": 13,
+                    "value": 1,
+                    "statement": "नहीं"
+                }
+            ]
+        },
+        {
+            "id": 18,
             "statement": "क्या आप डॉक्टर के परामर्श के लिए तैयार हैं?",
             "type": "button",
             "answers": [
@@ -380,16 +490,6 @@
                     "statement": "नहीं"
                 }
             ]
-        },
-        {
-            "statement": "आप अपनी तकलीफ / दिख रहे लक्षण बताये?",
-            "type": "text",
-            "nextQuestion": 20
-        },
-        {
-            "statement": "आपको कितने दिनों से ये तकलीफ है?",
-            "type": "text",
-            "nextQuestion": 0
         }
     ]
 }

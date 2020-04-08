@@ -147,6 +147,31 @@ function Table(props) {
                             <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Hospital">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'H' : 'HOS' : 'Hospital'}</abbr>
                         </div>
                     </th>
+                    <th onClick={(e) => handleSort(e, props)}>
+                        <div className='heading-content'>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Telephone">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'T' : 'Tel' : 'Telephone'}</abbr>
+                        </div>
+                    </th>
+                    <th onClick={(e) => handleSort(e, props)}>
+                        <div className='heading-content'>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Email">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'E' : 'Email' : 'Email'}</abbr>
+                        </div>
+                    </th>
+                    <th onClick={(e) => handleSort(e, props)}>
+                        <div className='heading-content'>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Name">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'N' : 'Name' : 'Name'}</abbr>
+                        </div>
+                    </th>
+                    <th onClick={(e) => handleSort(e, props)}>
+                        <div className='heading-content'>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Department">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'D' : 'Dept' : 'Department'}</abbr>
+                        </div>
+                    </th>
+                    <th onClick={(e) => handleSort(e, props)}>
+                        <div className='heading-content'>
+                            <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Post">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'P' : 'Post' : 'Post'}</abbr>
+                        </div>
+                    </th>
                 </tr>
             </thead>
 
