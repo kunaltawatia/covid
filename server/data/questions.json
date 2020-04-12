@@ -81,12 +81,18 @@
             "type": "select",
             "answers": [
                 {
-                    "nextQuestion": 21,
+                    "nextQuestion": 28,
                     "value": 0,
                     "statement": "AIIMS Jodhpur",
                     "dbValue": "AIIMS Jodhpur"
                 }
             ]
+        },
+        {
+            "id": 28,
+            "statement": "एम्स मरीज की आई.डी.",
+            "type": "text",
+            "nextQuestion": 21
         },
         {
             "id": 4,
