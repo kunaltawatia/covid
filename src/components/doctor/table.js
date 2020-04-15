@@ -5,7 +5,7 @@ import { ENDPOINT } from '../../config';
 
 import Row from './row';
 
-function Table(props) {
+function Table({ username, changePatient }) {
     const [patients, setPatients] = useState([]);
     const [page, setPage] = useState(1);
 
@@ -74,6 +74,18 @@ function Table(props) {
                     return (
                         <tbody>
                             <Row key={index} patient={patient} />
+                            {patient.doctor === username ?
+                                <button
+                                    className="send"
+                                    style={{ margin: 0 }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        changePatient(patient._id);
+                                    }}
+                                >
+                                    <Icon.MessageCircle />
+                                </button>
+                                : null}
                         </tbody>
                     );
                 })

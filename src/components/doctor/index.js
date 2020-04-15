@@ -14,7 +14,12 @@ class Doctor extends React.Component {
         loading: true,
         loggedin: false,
         username: '',
-        password: ''
+        password: '',
+        patient: ''
+    }
+
+    changePatient = (patient) => {
+        this.setState({ patient });
     }
 
     componentDidMount() {
@@ -88,7 +93,7 @@ class Doctor extends React.Component {
 
     render() {
 
-        const { loggedin, username, password, error, loading, hospital } = this.state;
+        const { loggedin, username, password, error, loading, patient } = this.state;
 
         if (!loggedin) {
             return (
@@ -131,7 +136,7 @@ class Doctor extends React.Component {
                         </div>
                     </div>
 
-                    <Chat username={username} hospital={hospital} />
+                    <Chat username={username} changePatient={this.changePatient} patient={patient} />
                 </div>
 
                 <div className="home-right">
@@ -139,7 +144,7 @@ class Doctor extends React.Component {
                         <p>{error}</p>
                         <button onClick={this.logout} className="logout fadeInUp" style={{ animationDelay: '0.8s' }}>Logout</button>
                     </form>
-                    <Table />
+                    <Table username={username} changePatient={this.changePatient} />
                 </div>
             </div>
         );

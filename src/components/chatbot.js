@@ -22,6 +22,7 @@ export default class Chat extends React.Component {
 
         chat: [],
         loadingChat: true,
+        requesting: false,
 
         connectToDoctor: false,
 
@@ -135,6 +136,8 @@ export default class Chat extends React.Component {
     connect = () => {
         const { patientId } = this.state;
 
+        this.setState({ requesting: true });
+
         this.socket = client('/', {
             path: '/app_chat',
             transports: ['websocket'],
@@ -156,7 +159,7 @@ export default class Chat extends React.Component {
         });
 
         this.socket.on('message', (text) => {
-            this.setState({ incomingTyping: false })
+            this.setState({ incomingTyping: false, requesting: false })
             this.enterMessageIntoChat(text, 'incoming');
         });
 
@@ -165,10 +168,9 @@ export default class Chat extends React.Component {
             this.scrollDown();
         });
 
-        this.socket.on('inactivity', () => {
+        this.socket.on('userDisconnected', () => {
             this.endCall(false);
             this.setState({ doctor: false, answerBoxHidden: true });
-            this.socket.disconnect();
         });
 
         this.socket.on('referUser', () => {
@@ -250,6 +252,8 @@ export default class Chat extends React.Component {
         const { latitude, longitude } = (position && position.coords) || {};
         const { chat, answers } = this.state;
 
+        this.setState({ requesting: true });
+
         axios.post(ENDPOINT + '/api/assessment', {
             answers,
             latitude,
@@ -273,8 +277,10 @@ export default class Chat extends React.Component {
                         }, this.scrollDown);
                     }
                 }
+                this.setState({ requesting: false });
             })
             .catch((error) => {
+                this.setState({ requesting: false });
                 console.log(error);
             });
     }
@@ -317,7 +323,7 @@ export default class Chat extends React.Component {
     }
 
     renderChat = () => {
-        const { callModal, chat, answerBoxHidden, incomingTyping, loadingChat } = this.state;
+        const { callModal, chat, answerBoxHidden, incomingTyping, loadingChat, requesting } = this.state;
 
         if (loadingChat)
             return null;
@@ -336,15 +342,14 @@ export default class Chat extends React.Component {
                         );
                     })
                 }
-                {/* Searching For Doctor answerBoxHidden... */}
-                {incomingTyping &&
+                {incomingTyping || requesting ?
                     <p className="incoming-message" >
                         <div class="dots">
                             <div class="dot"></div>
                             <div class="dot"></div>
                             <div class="dot"></div>
                         </div>
-                    </p>}
+                    </p> : null}
                 <CallModal
                     status={callModal}
                     startCall={this.startCall}

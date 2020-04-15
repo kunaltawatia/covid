@@ -46,6 +46,13 @@ export default class Chat extends React.Component {
             });
     }
 
+    componentWillReceiveProps(props) {
+        const { patient } = props;
+        if (this.state.patient !== patient && this.socket) {
+            this.socket.emit('changePatient', patient);
+        }
+    }
+
     sendMessage = (e) => {
         if (e && e.preventDefault) e.preventDefault();
 
