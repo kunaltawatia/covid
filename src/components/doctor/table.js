@@ -8,30 +8,6 @@ import Row from './row';
 function Table(props) {
     const [patients, setPatients] = useState([]);
     const [page, setPage] = useState(1);
-    //   const [districts, setDistricts] = useState({});
-    //   const [count, setCount] = useState(0);
-    //   const [sortData, setSortData] = useState({
-    //     sortColumn: 'confirmed',
-    //     isAscending: false,
-    //   });
-
-    //   useEffect(()=>{
-    //     if (props.summary===true) {
-    //       setStates(props.states.slice(0, 9));
-    //     } else {
-    //       setStates(props.states);
-    //     }
-    //   }, [props.states]);
-
-    //   useEffect(()=>{
-    //     if (states.length>0) {
-    //       let length = 0;
-    //       props.states.map((state, i) => {
-    //         if (i!==0 && state.confirmed>0) length+=1;
-    //         if (i===props.states.length-1) setCount(length);
-    //       });
-    //     }
-    //   }, [states.length]);
 
     useEffect(() => {
         getPatients();
@@ -39,7 +15,6 @@ function Table(props) {
     useEffect(() => {
         getPatients();
     }, [page]);
-    /* add renew button */
 
     const getPatients = () => {
 
@@ -54,39 +29,6 @@ function Table(props) {
     // make a axios call every 1min
     // setInterval(getPatients, 60 * 1000);
 
-    //   const doSort = (e, props) => {
-    //     const totalRow = states.splice(0, 1);
-    //     {/* console.log(totalRow);*/}
-    //     states.sort((StateData1, StateData2) => {
-    //       const sortColumn = sortData.sortColumn;
-    //       let value1 = StateData1[sortColumn];
-    //       let value2 = StateData2[sortColumn];
-
-    //       if (sortColumn != 'state') {
-    //         value1 = parseInt(StateData1[sortColumn]);
-    //         value2 = parseInt(StateData2[sortColumn]);
-    //       }
-
-    //       if (sortData.isAscending) {
-    //         return value1 > value2 ? 1 : (value1 == value2) && StateData1['state'] > StateData2['state'] ? 1 : -1;
-    //       } else {
-    //         return value1 < value2 ? 1 : (value1 == value2) && StateData1['state'] > StateData2['state'] ? 1 : -1;
-    //       }
-    //     });
-    //     {/* console.log(states);*/}
-    //     states.unshift(totalRow[0]);
-    //   };
-
-    const handleSort = (e, props) => {
-        // const currentsortColumn = e.currentTarget.querySelector('abbr').getAttribute('title').toLowerCase();
-        // setSortData({
-        //   sortColumn: currentsortColumn,
-        //   isAscending: sortData.sortColumn == currentsortColumn? !sortData.isAscending : sortData.sortColumn === 'state',
-        // });
-    };
-
-    //   doSort();
-
     return (
         <table className="table fadeInUp" style={{ animationDelay: '1s' }}>
             <h5 className="affected-count">
@@ -97,29 +39,29 @@ function Table(props) {
             </h5>
             <thead>
                 <tr>
-                    <th className="state-heading" onClick={(e) => handleSort(e, props)} >
+                    <th className="state-heading" >
                         <div className='heading-content'>
                             <abbr title="Name">
                                 Name
                             </abbr>
                         </div>
                     </th>
-                    <th onClick={(e) => handleSort(e, props)}>
+                    <th >
                         <div className='heading-content'>
                             <abbr className={`${window.innerWidth <= 769 ? 'is-cherry' : ''}`} title="Telephone">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'T' : 'Tel' : 'Telephone'}</abbr>
                         </div>
                     </th>
-                    <th onClick={(e) => handleSort(e, props)}>
+                    <th >
                         <div className='heading-content'>
                             <abbr className={`${window.innerWidth <= 769 ? 'is-blue' : ''}`} title="Age">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'A' : 'Age' : 'Age'}</abbr>
                         </div>
                     </th>
-                    <th onClick={(e) => handleSort(e, props)}>
+                    <th >
                         <div className='heading-content'>
                             <abbr className={`${window.innerWidth <= 769 ? 'is-green' : ''}`} title="Gender">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'G' : 'Gen' : 'Gender'}</abbr>
                         </div>
                     </th>
-                    <th onClick={(e) => handleSort(e, props)}>
+                    <th >
                         <div className='heading-content'>
                             <abbr className={`${window.innerWidth <= 769 ? 'is-gray' : ''}`} title="Type">{window.innerWidth <= 769 ? window.innerWidth <= 375 ? 'T' : 'Typ' : 'Type'}</abbr>
                         </div>

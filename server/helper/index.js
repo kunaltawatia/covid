@@ -1,4 +1,5 @@
 var { questions } = require('../data/questions.json');
+var Doctor = require('../models/doctor');
 
 function getDbValue(questionIndex, dbQuestionIndex, answers) {
     try {
@@ -29,80 +30,88 @@ function getId(name, number) {
     return null;
 }
 
-module.exports.getId = getId;
-
-module.exports.answersToModel = (answers, callback) => {
-
+function answersToModel(answers, callback) {
     if (!answers)
         callback({});
     else {
-        name = answers['21']
-        gender = getQuestionById(1).answers[answers['1']].dbValue;
-        hospital = getQuestionById(25).answers[answers['25']].dbValue;
-        age = answers['2']
-        telephone = answers['3']
+        Doctor.find().distinct('hospital', (err, hospitals) => {
+            if (err || !hospitals) return callback({});
 
-        type = getQuestionById(4).answers[answers['4']].dbValue;
+            name = answers['21']
+            gender = getQuestionById(1).answers[answers['1']].dbValue;
+            hospital = hospitals[answers['25']];
+            age = answers['2']
+            telephone = answers['3']
+            aiims_id = hospital === 'AIIMS Jodhpur' ? answers['28'] : '';
 
-        if (type === "OPD") {
-            opd_symptoms = answers['19'];
-            opd_symptoms_age = answers['20'];
-            callback({
-                name,
-                age,
-                gender,
-                telephone,
-                hospital,
-                type,
-                opd_symptoms,
-                opd_symptoms_age
-            });
-        }
-        else {
-            fever = getDbValue(5, 6, answers);
-            cough = getDbValue(7, 8, answers);
-            shortness_of_breath = getDbValue(9, 9, answers);
-            fatigue = getDbValue(10, 10, answers);
-            headache = getDbValue(11, 11, answers);
-            sore_throat = getDbValue(12, 12, answers);
-            change_in_smell = getDbValue(27, 27, answers);
-            change_in_taste = getDbValue(26, 26, answers);
+            type = getQuestionById(4).answers[answers['4']].dbValue;
 
-            international_traveller = getDbValue(13, 14, answers);
-            patient_in_household = getDbValue(15, 15, answers);
-            contact_with_patient = getDbValue(16, 16, answers);
+            if (type === "OPD") {
+                opd_symptoms = answers['19'];
+                opd_symptoms_age = answers['20'];
+                callback({
+                    name,
+                    age,
+                    gender,
+                    telephone,
+                    hospital,
+                    type,
+                    opd_symptoms,
+                    opd_symptoms_age,
+                    aiims_id
+                });
+            }
+            else {
+                fever = getDbValue(5, 6, answers);
+                cough = getDbValue(7, 8, answers);
+                shortness_of_breath = getDbValue(9, 9, answers);
+                fatigue = getDbValue(10, 10, answers);
+                headache = getDbValue(11, 11, answers);
+                sore_throat = getDbValue(12, 12, answers);
+                change_in_smell = getDbValue(27, 27, answers);
+                change_in_taste = getDbValue(26, 26, answers);
 
-            additional = answers['17']
+                international_traveller = getDbValue(13, 14, answers);
+                patient_in_household = getDbValue(15, 15, answers);
+                contact_with_patient = getDbValue(16, 16, answers);
 
-            symptomatic = (fever && true) || (cough && true) || (shortness_of_breath && true) || false;
+                additional = answers['17']
 
-            suspect = (international_traveller && symptomatic && true) ||
-                (contact_with_patient && symptomatic && true) ||
-                (patient_in_household && true) || false;
+                symptomatic = (fever && true) || (cough && true) || (shortness_of_breath && true) || false;
 
-            callback({
-                name,
-                age,
-                gender,
-                telephone,
-                hospital,
-                type,
-                fever,
-                cough,
-                shortness_of_breath,
-                fatigue,
-                headache,
-                sore_throat,
-                change_in_smell,
-                change_in_taste,
-                international_traveller,
-                patient_in_household,
-                contact_with_patient,
-                symptomatic,
-                suspect,
-                additional
-            });
-        }
+                suspect = (international_traveller && symptomatic && true) ||
+                    (contact_with_patient && symptomatic && true) ||
+                    (patient_in_household && true) || false;
+
+                callback({
+                    name,
+                    age,
+                    gender,
+                    telephone,
+                    hospital,
+                    type,
+                    fever,
+                    cough,
+                    shortness_of_breath,
+                    fatigue,
+                    headache,
+                    sore_throat,
+                    change_in_smell,
+                    change_in_taste,
+                    international_traveller,
+                    patient_in_household,
+                    contact_with_patient,
+                    symptomatic,
+                    suspect,
+                    additional,
+                    aiims_id
+                });
+            }
+        });
     }
+}
 
+module.exports = {
+    getId,
+    answersToModel
 }

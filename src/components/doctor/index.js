@@ -126,7 +126,7 @@ class Doctor extends React.Component {
                         <div className="header-mid">
                             <div className="titles">
                                 <h1>COVID-19 सहायता पोर्टल</h1>
-                                <h2>एम्स जोधपुर - आईआईटी जोधपुर की संयुक्त पहल</h2>
+                                <h2>आईआईटी जोधपुर की पहल</h2>
                             </div>
                         </div>
                     </div>

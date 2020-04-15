@@ -249,6 +249,30 @@ h6 {
     flex-direction: column;
     width: 30rem;
   }
+  .app-link {
+    margin-top: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    a {
+      // border-radius: 5px;
+      text-decoration: none;
+      color: $gray;
+      padding: 0;
+      background: $gray-light;
+      border-radius: 1rem;
+      padding: 0.5rem 1rem;
+      transition: background 0.2s ease-in-out;
+      &:hover {
+        background: $blue-hover;
+      }
+      h3 {
+        margin: 0;
+        font-weight: 700;
+        text-transform: none;
+      }
+    }
+  }
   .myth-image {
     object-fit: contain;
     width: calc(100% - 2rem);
@@ -442,29 +466,125 @@ h6 {
     text-decoration: none;
   }
 
-  .lds-dual-ring {
-    margin-top: 4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .lds-dual-ring:after {
-    content: " ";
-    display: block;
-    width: 16px;
-    height: 16px;
-    margin: 8px;
-    border-radius: 50%;
-    border: 2px solid $gray;
-    border-color: $gray transparent $gray transparent;
-    animation: lds-dual-ring 1.2s linear infinite;
-  }
   @keyframes lds-dual-ring {
     0% {
       transform: rotate(0deg);
     }
     100% {
       transform: rotate(360deg);
+    }
+  }
+}
+
+.lds-dual-ring {
+  margin-top: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lds-dual-ring:after {
+  content: " ";
+  display: block;
+  width: 16px;
+  height: 16px;
+  margin: 8px;
+  border-radius: 50%;
+  border: 2px solid $gray;
+  border-color: $gray transparent $gray transparent;
+  animation: lds-dual-ring 1.2s linear infinite;
+}
+
+@mixin bg-gradient($specs...) {
+  background: -webkit-linear-gradient($specs);
+  background: -moz-linear-gradient($specs);
+  background: -o-linear-gradient($specs);
+}
+
+.call-window {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  opacity: 1;
+  z-index: 1;
+  // @include transition(opacity 0.5s);
+  @include bg-gradient(top, #9989b3 0%, rgb(16, 15, 17) 100%);
+  background: linear-gradient(to bottom, #9989b3 0%, rgb(16, 15, 17) 100%);
+
+  &.active {
+    opacity: 1;
+    z-index: auto;
+
+    .video-control {
+      z-index: auto;
+      // @include animation(in-fadeout 3s ease);
+    }
+  }
+
+  .video-control {
+    position: fixed;
+    bottom: 20px;
+    background: $gray-light;
+    padding: 1rem 0.5rem;
+    border-radius: 1rem;
+    right: 40%;
+    opacity: 1;
+    z-index: 1;
+    // @include transition(opacity 0.5s);
+    &:hover {
+      opacity: 1;
+      background: $gray-hover;
+    }
+  }
+
+  video {
+    position: absolute;
+  }
+
+  #localVideo {
+    bottom: 0;
+    right: 0;
+    width: 20%;
+    height: 20%;
+  }
+
+  #peerVideo {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.video-control,
+.call-modal {
+  .btn-action {
+    $height: 50px;
+    height: $height;
+    width: $height;
+    line-height: $height;
+    margin: 0px 8px;
+    font-size: 1.4em;
+    color: white;
+    text-align: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition-duration: 0.25s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &.hangup {
+      background-color: $red;
+      // @include transform(rotate(135deg));
+    }
+
+    &:not(.hangup) {
+      background-color: $blue;
+
+      &.disable {
+        background-color: $red;
+      }
     }
   }
 }
@@ -482,7 +602,9 @@ h6 {
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.302), 0 1px 3px 1px rgba(60, 64, 67, 0.149);
+
   .chat-box {
+    flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
@@ -534,7 +656,7 @@ h6 {
         padding: 0.5rem;
         padding-left: 1rem;
         border: none;
-        flex-grow: 5;
+        width: calc(100% - 2rem);
         font-family: "cambay";
         background: $gray-light;
         color: $gray;
@@ -670,8 +792,18 @@ h6 {
       background: none;
       padding: 0;
       color: $gray;
-      margin: 0px 5px -10px 10px;
+      margin: 0px 10px -10px 10px;
       box-shadow: none;
+      width: 40px;
+    }
+    &.incoming-call-button {
+      height: 48px;
+      width: 48px;
+      margin-bottom: 20px;
+      margin-top: 10px;
+      border-radius: 48px;
+      padding: 10px;
+      border: 2px #6c757d99 dashed;
     }
     &.start {
       font-family: "yatra-one";
@@ -706,7 +838,7 @@ h6 {
       background: none;
       height: 40px;
       max-width: 40px;
-      border-radius: 40px;      
+      border-radius: 40px;
     }
     .select-row {
       flex: 1;
@@ -715,7 +847,7 @@ h6 {
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      label{
+      label {
         font-size: 12px;
         color: $gray-mid;
         margin-right: 1rem;
@@ -728,7 +860,7 @@ h6 {
         color: $gray;
         cursor: pointer;
         font-weight: 700;
-        border-radius: .5rem;
+        border-radius: 0.5rem;
         transition: background 0.2s ease-in-out;
         margin: 0.25rem;
         outline: none;
@@ -1284,7 +1416,7 @@ footer {
   }
 }
 
-.FAQ {
+.Acknowledgment {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -1323,6 +1455,108 @@ footer {
   .mohfw-logo {
     width: 20rem;
   }
+  div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .portfolio-holder {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+  }
+  .portfolio {
+    margin-bottom: 1rem;
+    width: 120px;
+    object-fit: contain;
+    border-radius: 160px;
+    padding: 10px;
+    border: 2px $gray-mid dashed;
+    align-self: flex-end;
+  }
+  a {
+    font-family: "roboto";
+    text-transform: uppercase;
+    word-wrap: break-word;
+    font-weight: 900;
+    text-decoration: none;
+    color: $gray-dark;
+    background: $gray-light;
+    transition: background 0.2s ease-in-out;
+    &:hover {
+      background: $gray-mid;
+    }
+  }
+}
+
+.FAQ {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-wrap: wrap;
+  // margin-left: 10rem;
+  // margin-right: 10rem;
+  h2 {
+    margin: 0;
+    font-weight: 600;
+    text-transform: none;
+  }
+  h3 {
+    margin: 0;
+    color: $gray;
+    font-family: "roboto";
+  }
+  h1 {
+    margin: 0;
+    color: $gray-dark;
+  }
+  .question {
+    margin-bottom: 0.5rem;
+    color: $gray-dark;
+    font-weight: 400;
+  }
+  .answer {
+    color: $blue-mid;
+    font-family: "cambay";
+  }
+  .mohfw-logo {
+    width: 20rem;
+  }
+  .faq-left,
+  .faq-right {
+    width: 30rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .faq-left {
+    width: auto;
+  }
+  .faq-right {
+    & > * {
+      align-self: center;
+      width: calc(100% - 2rem);
+      margin: 0rem 1rem;
+      max-width: 30rem;
+      margin-bottom: 1.5rem;
+    }
+    & > *:first-child {
+      margin-top: 2rem;
+    }
+  }
+  .video-holder {
+    div {
+      display: flex;
+      .faq-video {
+        object-fit: contain;
+        height: 230px;
+        max-width: 24rem;
+        margin: 1rem;
+        margin-top: 4rem;
+      }
+    }
+  }
 }
 
 @media (max-width: 769px) {
@@ -1334,8 +1568,35 @@ footer {
   // .TimeSeries-Parent,
   .Links,
   // .Minigraph,
+  .Acknowledgment,
   .FAQ {
     width: calc(100% - 2rem);
+  }
+  .FAQ {
+    width: 100%;
+    .faq-left,
+    .faq-right {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .video-holder {
+      div {
+        display: flex;
+        flex-direction: column;
+        .faq-video {
+          object-fit: contain;
+          width: calc(100% - 2rem);
+          margin: 1rem;
+        }
+      }
+    }
+  }
+  .Acknowledgment {
+    .portfolio {
+      width: 80px;
+    }
   }
   .Home {
     display: flex;
@@ -1396,19 +1657,8 @@ footer {
   }
   .Chat {
     max-height: 75vh;
-  }
-}
-
-/* For the iPhone X folks OMG WHY ARE YOUR SCREENS SO NARROW T_T*/
-@media (max-width: 375px) {
-  .timeseries-mode {
-    display: block !important;
-    width: 4.25rem;
-    top: 2rem !important;
-    text-align: right;
-    input {
-      margin: 0;
-      margin-top: 0.25rem !important;
+    &.call-window {
+      max-height: none;
     }
   }
 }
@@ -1473,9 +1723,9 @@ footer {
   }
 }
 
-/*.rollDown {
+.rollDown {
   animation-name: rollDown;
-  animation-duration: 0.250s;
+  animation-duration: 0.25s;
   animation-fill-mode: both;
 }
 
@@ -1487,7 +1737,7 @@ footer {
     opacity: 1;
   }
 }
-
+/*
 .rollUp {
   animation-name: rollUp;
   animation-duration: 0.250s;

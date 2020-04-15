@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-// import $ from 'jquery';
 
 function Navbar(props) {
   const [view, setView] = useState(() => {
@@ -12,23 +11,6 @@ function Navbar(props) {
       default: return "";
     }
   });
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     var windowBottom = $(window).scrollTop() + $(window).innerHeight();
-  //     $(".animate").each(function () {
-  //       /* Check the location of each desired element */
-  //       var objectBottom = $(this).offset().top;
-
-  //       /* If the element is completely within bounds of the window, fade it in */
-  //       if (objectBottom < windowBottom) { //object comes into view (scrolling down)
-  //         $(this).removeClass('animate').addClass('fadeInUp')
-  //       } else { //object goes out of view (scrolling up)
-  //         // if ($(this).css("opacity")==1) {$(this).fadeTo(500,0);}
-  //       }
-  //     });
-  //   }, 300);
-  // }, [view])
 
   if (window.location.pathname !== "/summary") {
     return (
@@ -65,22 +47,6 @@ function Navbar(props) {
               होम
             </span>
           </Link>
-          {/* 
-          <Link
-            to="/links"
-            onClick={() => {
-              setView("Helpline");
-            }}
-          >
-            <span
-              className={`fadeInUp ${
-                view === "Helpline" ? "focused" : ""
-                }`}
-              style={{ animationDelay: "0.4s" }}
-            >
-              हेल्पलाइन
-            </span>
-          </Link> */}
 
           <Link
             to="/faq"

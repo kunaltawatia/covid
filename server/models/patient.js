@@ -39,6 +39,7 @@ const PatientSchema = new Schema({
     chat_id: String,
     doctor: String,
     hospital: String,
+    aiims_id: String,
     type: String,
     opd_symptoms: String,
     opd_symptoms_age: String,

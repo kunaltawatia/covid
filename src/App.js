@@ -90,10 +90,6 @@ function App() {
             <img src="/images/iitj-logo.png" alt="logo" />
           </a>
         </div>
-        {/* <div className="link">
-          <a href="https://github.com/covid19india">covid19india</a>
-
-        </div> */}
         <br />
         <div className="footer-sources">
           <h6 className="sources">सूचना के स्रोत: </h6>

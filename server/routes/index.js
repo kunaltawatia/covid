@@ -50,8 +50,8 @@ router.post('/assessment', (req, res) => {
           }
         ]
       });
-        const { suspect, _id, type } = patient;
-        res.json({
+      const { suspect, _id, type } = patient;
+      res.json({
         connectToDoctor: suspect || type === 'OPD',
         patientId: _id,
         incomingChats: patient.chat,
@@ -119,18 +119,38 @@ router.post('/assessment', (req, res) => {
 
 router.get('/questions', (req, res) => {
   /* doctor's availability status and welcome message */
-  res.json({
-    questions,
-    incomingChats: [
-      {
-        statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
-        type: 'incoming'
-      },
-      {
-        statement: 'आपका स्वागत है',
-        type: 'incoming'
-      }
-    ]
+  Doctor.find().distinct('hospital', (err, hospitals) => {
+    if (err || !hospitals) return res.json({});
+
+    res.json({
+      questions: questions.map(question => {
+        if (question.id === 25) {
+          return {
+            ...question,
+            answers: hospitals.map((hospital, index) => {
+              return {
+                nextQuestion: hospital === 'AIIMS Jodhpur' ? 28 : 21,
+                value: index,
+                statement: hospital,
+                dbValue: hospital
+              }
+            })
+          };
+        }
+        else
+          return question
+      }),
+      incomingChats: [
+        {
+          statement: 'अस्वीकरण: हम आपकी व्यक्तिगत जानकारी जैसे नाम, आयु, फोन नंबर पंजीकरण के प्रयोजनों के लिए एकत्र करते हैं। हम इस जानकारी को किसी अन्य तीसरे पक्ष के साथ साझा नहीं करते हैं और न ही हम इसका उपयोग व्यावसायिक उद्देश्यों में करते हैं। हम आपकी जानकारी का उपयोग हमारे शोध के उद्देश्य और नवीन और उन्नत सेवाओं को बनाने के लिए कर सकते हैं। हम गूगल एनालिटिक्स जैसी थर्ड पार्टी वेब विश्लेषणात्मक सेवाओं का भी उपयोग करते हैं जो इस वेबसाइट के आपके उपयोग से संबंधित जानकारी एकत्र कर सकती हैं।',
+          type: 'incoming'
+        },
+        {
+          statement: 'आपका स्वागत है',
+          type: 'incoming'
+        }
+      ]
+    });
   });
 })
 

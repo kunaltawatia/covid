@@ -1,12 +1,16 @@
 import React from 'react';
 import * as Icon from 'react-feather';
 import $ from 'jquery';
+import _ from 'lodash';
 
 import axios from 'axios';
 import { ENDPOINT } from '../../config';
 
-const client = require('socket.io-client');
+import PeerConnection from '../webrtc/PeerConnection';
+import CallWindow from '../webrtc/CallWindow';
+import CallModal from '../webrtc/CallModal';
 
+const client = require('socket.io-client');
 
 export default class Chat extends React.Component {
     state = {
@@ -18,10 +22,16 @@ export default class Chat extends React.Component {
         textAnswered: '',
         actionsReveal: false,
         doctors: [],
-        doctorSelected: ''
+        doctorSelected: '',
+
+        callWindow: '',
+        callModal: '',
+        localSrc: null,
+        peerSrc: null
     };
 
-    socket = null
+    socket = null;
+    pc = {};
 
     componentDidMount() {
         axios.get(ENDPOINT + '/api/doctor-list')
@@ -61,8 +71,9 @@ export default class Chat extends React.Component {
     connect = () => {
         const { username, hospital } = this.props;
 
-        this.socket = client(ENDPOINT, {
+        this.socket = client('/', {
             path: '/app_chat',
+            transports: ['websocket'],
             query: {
                 type: 'doctor',
                 username,
@@ -71,7 +82,6 @@ export default class Chat extends React.Component {
         });
 
         this.socket.on('userAlloted', (user) => {
-            console.log(user);
             this.setState({
                 loading: false,
                 user
@@ -92,6 +102,7 @@ export default class Chat extends React.Component {
         });
 
         this.socket.on('userDisconnected', () => {
+            this.endCall(false);
             this.setState({
                 loading: true,
                 user: null,
@@ -120,8 +131,56 @@ export default class Chat extends React.Component {
 
         this.socket.on('inactivity', () => {
             this.socket.disconnect();
+            this.endCall(false);
             this.setState({ user: false, loading: true });
         });
+
+        this.socket.on('request', () => {
+            this.setState({ callModal: 'active' });
+            this.scrollDown();
+        })
+
+        this.socket.on('call', (data) => {
+            if (data.sdp) {
+                this.pc.setRemoteDescription(data.sdp);
+                if (data.sdp.type === 'offer') this.pc.createAnswer();
+            } else this.pc.addIceCandidate(data.candidate);
+        })
+
+        this.socket.on('end', this.endCall.bind(this, false))
+
+    }
+
+    startCall = (isCaller, config) => {
+        this.config = config;
+        this.pc = new PeerConnection(this.socket)
+            .on('localStream', (src) => {
+                const newState = { callWindow: 'active', localSrc: src };
+                if (!isCaller) newState.callModal = '';
+                this.setState(newState);
+            })
+            .on('peerStream', (src) => this.setState({ peerSrc: src }))
+            .start(isCaller, config);
+    }
+
+    rejectCall = () => {
+        const { callFrom } = this.state;
+        this.socket.emit('end', { to: callFrom });
+        this.setState({ callModal: '' });
+    }
+
+    endCall = (isStarter) => {
+        if (_.isFunction(this.pc.stop)) {
+            this.pc.stop(isStarter);
+        }
+        this.pc = {};
+        this.config = null;
+        this.setState({
+            callWindow: '',
+            callModal: '',
+            localSrc: null,
+            peerSrc: null
+        }, this.scrollDown);
     }
 
     disconnectUser = () => {
@@ -164,7 +223,7 @@ export default class Chat extends React.Component {
     }
 
     renderChat = () => {
-        const { chat, loading, incomingTyping } = this.state;
+        const { callModal, chat, loading, incomingTyping } = this.state;
 
         return (
             <div id="chat-box" className="chat-box" style={loading ? { marginBottom: 0 } : {}}>
@@ -189,6 +248,11 @@ export default class Chat extends React.Component {
                             <div class="dot"></div>
                         </div>
                     </p>}
+                <CallModal
+                    status={callModal}
+                    startCall={this.startCall}
+                    rejectCall={this.rejectCall}
+                />
             </div>
         )
 
@@ -196,6 +260,11 @@ export default class Chat extends React.Component {
 
     renderAnswers = () => {
         const { textAnswered, loading, user } = this.state;
+
+        const callWithVideo = (video) => {
+            const config = { audio: true, video };
+            return () => this.startCall(true, config);
+        };
 
         if (loading) return null;
 
@@ -209,9 +278,23 @@ export default class Chat extends React.Component {
                         spellCheck="false"
                         onFocus={this.scrollDown}
                     />
-                    <button type="submit" className="send">
+                    {textAnswered ? <button type="submit" className="send">
                         <Icon.Send />
-                    </button>
+                    </button> : null}
+                    {!textAnswered ? <button
+                        type="button"
+                        onClick={callWithVideo(true)}
+                        className="send"
+                    >
+                        <Icon.Video />
+                    </button> : null}
+                    {!textAnswered ? <button
+                        type="button"
+                        onClick={callWithVideo(false)}
+                        className="send"
+                    >
+                        <Icon.PhoneCall />
+                    </button> : null}
                 </form>
             </div>
         )
@@ -223,7 +306,12 @@ export default class Chat extends React.Component {
         if (!actionsReveal)
             return (
                 <div className="chat-actions">
-                    <button onClick={() => { this.setState({ actionsReveal: true, doctorSelected: doctors[0].username }) }}>
+                    <button onClick={() => {
+                        this.setState({
+                            actionsReveal: true,
+                            doctorSelected: doctors.length ? doctors[0].username : ''
+                        })
+                    }}>
                         <Icon.ArrowRight />
                     </button>
                 </div>
@@ -234,29 +322,33 @@ export default class Chat extends React.Component {
                 <button onClick={() => { this.setState({ actionsReveal: false }) }}>
                     <Icon.ArrowDown />
                 </button>
-                <div className="select-row fadeInUp" style={{ animationDelay: '0.2s' }}>
-                    <label>Refer to:</label>
-                    <select id="doctorSelected" value={doctorSelected} onChange={this.handleChange}>
-                        {
-                            doctors.map(({ username, name, post }) => {
-                                return (
-                                    <option value={username}>
-                                        {name}, {post}
-                                    </option>
-                                )
-                            })
-                        }
-                    </select>
-                    <button className="send" onClick={this.referUser}>
-                        <Icon.Send />
-                    </button>
-                </div>
+                {doctors.length ?
+                    <div className="select-row fadeInUp" style={{ animationDelay: '0.2s' }}>
+                        <label>Refer to:</label>
+                        <select id="doctorSelected" value={doctorSelected} onChange={this.handleChange}>
+                            {
+                                doctors.map(({ username, name, post }) => {
+                                    return (
+                                        <option value={username}>
+                                            {name}, {post}
+                                        </option>
+                                    )
+                                })
+                            }
+                        </select>
+                        <button className="send" onClick={this.referUser}>
+                            <Icon.Send />
+                        </button>
+                    </div>
+                    : null
+                }
             </div>
         )
     }
 
     render() {
         const { user, chatStarted } = this.state;
+        const { callWindow, localSrc, peerSrc } = this.state;
 
         if (!chatStarted)
             return (
@@ -276,6 +368,19 @@ export default class Chat extends React.Component {
                 </div>
             );
 
+        if (!_.isEmpty(this.config)) {
+            return (
+                <CallWindow
+                    status={callWindow}
+                    localSrc={localSrc}
+                    peerSrc={peerSrc}
+                    config={this.config}
+                    mediaDevice={this.pc.mediaDevice}
+                    endCall={this.endCall}
+                    socket={this.socket}
+                />
+            )
+        }
         return (
             <div className="Chat fadeInUp" style={{ animationDelay: '0.7s', marginBottom: '8rem' }}>
                 {user ?

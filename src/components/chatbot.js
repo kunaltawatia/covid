@@ -1,12 +1,16 @@
 import React from 'react';
 import * as Icon from 'react-feather';
 import $ from 'jquery';
+import _ from 'lodash';
 
 import axios from 'axios';
 import { ENDPOINT } from '../config';
 
-const client = require('socket.io-client');
+import PeerConnection from './webrtc/PeerConnection';
+import CallWindow from './webrtc/CallWindow';
+import CallModal from './webrtc/CallModal';
 
+const client = require('socket.io-client');
 
 export default class Chat extends React.Component {
     state = {
@@ -27,10 +31,16 @@ export default class Chat extends React.Component {
 
         answerBoxHidden: true,
         answerFormat: {},
-        questionDetails: {}
+        questionDetails: {},
+
+        callWindow: '',
+        callModal: '',
+        localSrc: null,
+        peerSrc: null
     };
 
     socket = null;
+    pc = {};
 
     componentDidMount() {
         axios.get(ENDPOINT + '/api/questions')
@@ -44,7 +54,7 @@ export default class Chat extends React.Component {
                     }, () => { this.setQuestion(questions[0]); });
             })
             .catch((error) => {
-                this.setState({ loadingChat: false });
+                // this.setState({ loadingChat: false });
                 console.log(error);
             });
         /*  In case we need constant viewport height
@@ -92,7 +102,8 @@ export default class Chat extends React.Component {
     }
 
     scrollDown = () => {
-        $("#chat-box").animate({ scrollTop: $("#chat-box")[0].scrollHeight }, 800);
+        if ($("#chat-box").length)
+            $("#chat-box").animate({ scrollTop: $("#chat-box")[0].scrollHeight }, 800);
     }
 
     sendMessage = (e) => {
@@ -122,13 +133,13 @@ export default class Chat extends React.Component {
     }
 
     connect = () => {
-        const { patientId, hospital } = this.state;
+        const { patientId } = this.state;
 
-        this.socket = client(ENDPOINT, {
+        this.socket = client('/', {
             path: '/app_chat',
+            transports: ['websocket'],
             query: {
                 patientId,
-                hospital,
                 type: 'patient'
             }
         });
@@ -155,13 +166,62 @@ export default class Chat extends React.Component {
         });
 
         this.socket.on('inactivity', () => {
-            this.socket.disconnect();
+            this.endCall(false);
             this.setState({ doctor: false, answerBoxHidden: true });
+            this.socket.disconnect();
         });
 
         this.socket.on('referUser', () => {
+            this.endCall(false);
             this.setState({ doctor: false, answerBoxHidden: true });
         });
+
+        this.socket.on('request', () => {
+            this.setState({ callModal: 'active' });
+            this.scrollDown();
+        })
+
+        this.socket.on('call', (data) => {
+            if (data.sdp) {
+                this.pc.setRemoteDescription(data.sdp);
+                if (data.sdp.type === 'offer') this.pc.createAnswer();
+            } else this.pc.addIceCandidate(data.candidate);
+        })
+
+        this.socket.on('end', this.endCall.bind(this, false))
+
+    }
+
+    startCall = (isCaller, config) => {
+        this.config = config;
+        this.pc = new PeerConnection(this.socket)
+            .on('localStream', (src) => {
+                const newState = { callWindow: 'active', localSrc: src };
+                if (!isCaller) newState.callModal = '';
+                this.setState(newState);
+            })
+            .on('peerStream', (src) => this.setState({ peerSrc: src }))
+            .start(isCaller, config);
+    }
+
+    rejectCall = () => {
+        const { callFrom } = this.state;
+        this.socket.emit('end', { to: callFrom });
+        this.setState({ callModal: '' });
+    }
+
+    endCall = (isStarter) => {
+        if (_.isFunction(this.pc.stop)) {
+            this.pc.stop(isStarter);
+        }
+        this.pc = {};
+        this.config = null;
+        this.setState({
+            callWindow: '',
+            callModal: '',
+            localSrc: null,
+            peerSrc: null
+        }, this.scrollDown);
     }
 
     answer = (event) => {
@@ -257,7 +317,7 @@ export default class Chat extends React.Component {
     }
 
     renderChat = () => {
-        const { chat, answerBoxHidden, incomingTyping, loadingChat } = this.state;
+        const { callModal, chat, answerBoxHidden, incomingTyping, loadingChat } = this.state;
 
         if (loadingChat)
             return null;
@@ -285,6 +345,11 @@ export default class Chat extends React.Component {
                             <div class="dot"></div>
                         </div>
                     </p>}
+                <CallModal
+                    status={callModal}
+                    startCall={this.startCall}
+                    rejectCall={this.rejectCall}
+                />
             </div>
         )
 
@@ -294,6 +359,10 @@ export default class Chat extends React.Component {
         const { optionSelected, textAnswered, answerBoxHidden, doctor, loadingChat } = this.state;
         const { answers, type, pattern } = this.state.answerFormat;
 
+        const callWithVideo = (video) => {
+            const config = { audio: true, video };
+            return () => this.startCall(true, config);
+        };
         /* no answers allowed */
         if (answerBoxHidden || loadingChat)
             return null;
@@ -310,11 +379,25 @@ export default class Chat extends React.Component {
                             spellCheck="false"
                             onFocus={this.scrollDown}
                         />
-                        <button type="submit" className="send">
+                        {textAnswered ? <button type="submit" className="send">
                             <Icon.Send />
-                        </button>
+                        </button> : null}
+                        {!textAnswered ? <button
+                            type="button"
+                            onClick={callWithVideo(true)}
+                            className="send"
+                        >
+                            <Icon.Video />
+                        </button> : null}
+                        {!textAnswered ? <button
+                            type="button"
+                            onClick={callWithVideo(false)}
+                            className="send"
+                        >
+                            <Icon.PhoneCall />
+                        </button> : null}
                     </form>
-                </div>
+                </div >
             );
         }
 
@@ -383,6 +466,21 @@ export default class Chat extends React.Component {
 
     render() {
         const { loadingChat } = this.state;
+        const { callWindow, localSrc, peerSrc } = this.state;
+
+        if (!_.isEmpty(this.config)) {
+            return (
+                <CallWindow
+                    status={callWindow}
+                    localSrc={localSrc}
+                    peerSrc={peerSrc}
+                    config={this.config}
+                    mediaDevice={this.pc.mediaDevice}
+                    endCall={this.endCall}
+                    socket={this.socket}
+                />
+            )
+        }
 
         return (
             <div className="Chat fadeInUp" style={{ animationDelay: '0.7s' }}>

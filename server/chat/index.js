@@ -1,6 +1,9 @@
+const redisAdapter = require('socket.io-redis');
 var io = require('socket.io')({
     path: '/app_chat'
 });
+
+io.adapter(redisAdapter({ host: 'localhost', port: 6379 }));
 
 var Patient = require('../models/patient');
 var Doctor = require('../models/doctor');
@@ -235,6 +238,45 @@ io.on('connection', function (socket) {
         else {
             getPatientsDoctor(patientId, (doctor_chat_id) => {
                 socket.to(doctor_chat_id).emit('typingChange', state);
+            });
+        }
+    });
+
+    socket.on('request', () => {
+        if (type === 'doctor') {
+            getDoctorsPatient(username, (patient_chat_id) => {
+                socket.to(patient_chat_id).emit('request');
+            });
+        }
+        else {
+            getPatientsDoctor(patientId, (doctor_chat_id) => {
+                socket.to(doctor_chat_id).emit('request');
+            });
+        }
+    });
+
+    socket.on('call', (data) => {
+        if (type === 'doctor') {
+            getDoctorsPatient(username, (patient_chat_id) => {
+                socket.to(patient_chat_id).emit('call', { ...data, from: username });
+            });
+        }
+        else {
+            getPatientsDoctor(patientId, (doctor_chat_id) => {
+                socket.to(doctor_chat_id).emit('call', { ...data, from: patientId });
+            });
+        }
+    });
+
+    socket.on('end', () => {
+        if (type === 'doctor') {
+            getDoctorsPatient(username, (patient_chat_id) => {
+                socket.to(patient_chat_id).emit('end');
+            });
+        }
+        else {
+            getPatientsDoctor(patientId, (doctor_chat_id) => {
+                socket.to(doctor_chat_id).emit('end');
             });
         }
     });

@@ -3,26 +3,13 @@ import axios from 'axios';
 import { ENDPOINT } from '../config';
 import LazyLoad from 'react-lazy-load';
 
-// import FAQ from './faq';
-
-// import $ from 'jquery';
-
-// import { format, zonedTimeToUtc } from 'date-fns-tz';
-// import { formatDistance, compareAsc } from 'date-fns';
-
-// import Table from './table';
 import Level from './level';
-// import ChoroplethMap from './choropleth';
-// import TimeSeries from './timeseries';
-// import Minigraph from './minigraph';
-// import Banner from './banner';
 import Chat from './chatbot';
 
-function Home(props) {
+function Home() {
   const [nationalStats, setNationalStats] = useState({});
   const [rajasthanStats, setRajasthanStats] = useState({});
   const [fetched, setFetched] = useState(false);
-  const [deltas, setDeltas] = useState([]);
 
   useEffect(() => {
     if (fetched === false) {
@@ -33,10 +20,6 @@ function Home(props) {
   const getStates = () => {
     axios.get(ENDPOINT + '/api/cases')
       .then((response) => {
-        // setStates(response.data.statewise);
-        // setTimeseries(response.data.cases_time_series);
-        // setLastUpdated(formatDate(response.data.statewise[0].lastupdatedtime));
-        // setDeltas(response.data.key_values[0]);
         setFetched(true);
         setNationalStats(response.data.national_stats);
         setRajasthanStats(response.data.rajasthan_stats);
@@ -54,7 +37,7 @@ function Home(props) {
           <div className="header-mid">
             <div className="titles">
               <h1>CoViDoc टेली-कंसल्टेंसी पोर्टल</h1>
-              <h2>एम्स जोधपुर - आईआईटी जोधपुर की संयुक्त पहल</h2>
+              <h2>आईआईटी जोधपुर की पहल</h2>
             </div>
           </div>
         </div>
@@ -63,6 +46,16 @@ function Home(props) {
       </div>
 
       <div className="home-right">
+        {
+          navigator.userAgent.toLowerCase().match(/android.*applewebkit(?=.*version)/) ?
+            null
+            :
+            <div className="app-link fadeInUp" style={{animationDelay: '1s'}}>
+              <a href="#">
+                <h3>Download CoViDoc App</h3>
+              </a>
+            </div>
+        }
 
         <div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
           <div className="header-right">
@@ -73,7 +66,7 @@ function Home(props) {
           </div>
         </div>
 
-        <Level data={nationalStats} deltas={deltas} />
+        <Level data={nationalStats} />
 
         <div className="header fadeInUp" style={{ animationDelay: '0.5s', paddingTop: 0 }}>
           <div className="header-right">
@@ -85,39 +78,7 @@ function Home(props) {
         </div>
 
         <Level data={rajasthanStats} />
-        {/* <Minigraph timeseries={timeseries} animate={true} /> */}
-
-        {/* <Table states={states} summary={false} onHighlightState={onHighlightState} /> */}
-
         <video src='/videos/who.mp4' controls={true} className="who-video fadeInUp" style={{ animationDelay: '0.5s' }}></video>
-
-        {/* <ChoroplethMap states={states} stateHighlighted={stateHighlighted} />
-
-        <div className="timeseries-header fadeInUp" style={{animationDelay: '1.5s'}}>
-          <h1>Spread Trends</h1>
-          <div className="tabs">
-            <div className={`tab ${graphOption===1 ? 'focused' : ''}`} onClick={()=>{
-              setGraphOption(1);
-            }}>
-              <h4>Cumulative</h4>
-            </div>
-            <div className={`tab ${graphOption===2 ? 'focused' : ''}`} onClick={()=>{
-              setGraphOption(2);
-            }}>
-              <h4>Daily</h4>
-            </div>
-          </div>
-
-          <div className="timeseries-mode">
-            <label htmlFor="timeseries-mode">Scale Uniformly</label>
-            <input type="checkbox" checked={timeseriesMode} onChange={(event)=>{
-              setTimeseriesMode(!timeseriesMode);
-            }}/>
-          </div>
-
-        </div>
-
-        <TimeSeries timeseries={timeseries} type={graphOption} mode={timeseriesMode}/> */}
 
       </div>
       <LazyLoad offsetVertical={300}>
