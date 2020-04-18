@@ -46,16 +46,6 @@ function Home() {
       </div>
 
       <div className="home-right">
-        {
-          navigator.userAgent.toLowerCase().match(/android.*applewebkit(?=.*version)/) ?
-            null
-            :
-            <div className="app-link fadeInUp" style={{animationDelay: '1s'}}>
-              <a href="#">
-                <h3>Download CoViDoc App</h3>
-              </a>
-            </div>
-        }
 
         <div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
           <div className="header-right">

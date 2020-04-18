@@ -9,12 +9,11 @@ setInterval(() => {
 
             const obj = {
                 national_stats: result.statewise[0],
-                rajasthan_stats: result.statewise[5],
-                cases_time_series: result.cases_time_series
+                rajasthan_stats: result.statewise[5]
             }
 
-            // fs.writeFile(path.join(__dirname, '../data/cases.json'), JSON.stringify(obj), 'utf8', (err) => {
-            // })
+            fs.writeFile(path.join(__dirname, '../data/cases.json'), JSON.stringify(obj), 'utf8', (err) => {
+            })
         })
         .catch(err => console.error(err));
 }, 10 * 60 * 1000);

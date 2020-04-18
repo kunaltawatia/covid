@@ -15,7 +15,7 @@ var transporter = nodemailer.createTransport({
 module.exports.mail = (username, subject, text) => {
 
     Doctors.findOne({ username }, (err, doctor) => {
-        if (err || !doctor) console.error(err);
+        if (err || !doctor) return console.error(err);
 
         const { email, name } = doctor;
         const mailOptions = {
@@ -23,7 +23,7 @@ module.exports.mail = (username, subject, text) => {
             to: email, // list of receivers
             cc: 'tawatia.1@iitj.ac.in',
             subject,
-            text
+            text: `Dear ${name},\n` + text
         };
 
         // console.log(mailOptions);
