@@ -29,7 +29,8 @@ function Navbar(props) {
             animationDelay: "0.0s",
             width: view === "Clusters" ? "1.5rem" : "",
             height: view === "Clusters" ? "1.5rem" : "",
-            transition: "all 0.3s ease-in-out"
+            transition: "all 0.3s ease-in-out",
+            cursor: 'default'
           }}
         />
 

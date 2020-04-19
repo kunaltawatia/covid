@@ -1,6 +1,8 @@
 var express = require("express");
 var fs = require("fs");
 var path = require("path");
+const multer = require("multer");
+var upload = multer({ dest: "public/images/" });
 
 var { answersToModel, getId } = require("../helper");
 var { mail } = require("../helper/mail");
@@ -36,6 +38,16 @@ router.get("/hits", (req, res) => {
     const { hits } = result;
     res.json({ hits });
   });
+});
+
+router.post("/image", upload.any(), (req, res) => {
+  if (req.files.length) {
+    var image = req.files[0];
+    console.log(image);
+    res.json({ image });
+  } else {
+    res.json({});
+  }
 });
 
 /* Patient */
@@ -83,71 +95,74 @@ router.post("/assessment", (req, res) => {
     });
   } else
     answersToModel(answers, (model) => {
-      const { name, telephone } = model;
-      Patient.create(
-        {
-          _id: getId(name, telephone),
-          ...model,
-          latitude,
-          longitude,
-          ip: req.headers["x-real-ip"] || req.ip,
-          created_at: Date.now(),
-          chat_id: "",
-          doctor: "",
-          chat: chat.slice(4),
-        },
-        (err, patient) => {
-          if (err) {
-            console.error(err);
-            return res.json({ incomingChats: [] });
-          }
+      const { name, telephone, hospital } = model;
 
-          const { suspect, _id, type, hospital } = patient;
+      Doctor.findOne({ hospital }, (err, doc) => {
+        if (err || !doc) return console.error(err);
 
-          req.session.patientId = patient;
+        Patient.create(
+          {
+            _id: getId(name, telephone),
+            ...model,
+            latitude,
+            longitude,
+            ip: req.headers["x-real-ip"] || req.ip,
+            created_at: Date.now(),
+            last_messaged_at: Date.now(),
+            chat_id: "",
+            doctor: doc.username,
+            chat: chat.slice(4),
+          },
+          (err, patient) => {
+            if (err) {
+              console.error(err);
+              return res.json({ incomingChats: [] });
+            }
 
-          Doctor.findOne({ hospital }, (err, doc) => {
-            if (err || !doc) return console.error(err);
+            const { suspect, _id, type } = patient;
+
+            req.session.patientId = patient;
+
             mail(
               doc.username,
               "Your Patient is Online",
               `Your patient ${name.toUpperCase()}, ${telephone}, has paid a visit, and is waiting for you.`
             );
-          });
 
-          res.json({
-            question: questions[questions.length - 1],
-            patientId: _id,
-            connectToDoctor: suspect || type === "OPD",
-            incomingChats: suspect
-              ? [
-                  {
-                    statement:
-                      "हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे",
-                    type: "incoming",
-                  },
-                ]
-              : type === "OPD"
-              ? []
-              : [
-                  {
-                    statement:
-                      "आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)",
-                    type: "incoming",
-                  },
-                  {
-                    statement:
-                      "कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें",
-                    type: "incoming",
-                  },
-                  {
-                    statement: "धन्यवाद",
-                    type: "incoming",
-                  },
-                ],
-          });
-        }
-      );
+            res.json({
+              question: questions[questions.length - 1],
+              patientId: _id,
+              connectToDoctor: suspect || type === "OPD",
+              incomingChats: suspect
+                ? [
+                    {
+                      statement:
+                        "हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे",
+                      type: "incoming",
+                    },
+                  ]
+                : type === "OPD"
+                ? []
+                : [
+                    {
+                      statement:
+                        "आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)",
+                      type: "incoming",
+                    },
+                    {
+                      statement:
+                        "कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें",
+                      type: "incoming",
+                    },
+                    {
+                      statement: "धन्यवाद",
+                      type: "incoming",
+                    },
+                  ],
+            });
+          }
+        );
+      });
     });
 });
 
@@ -199,7 +214,7 @@ router.get("/patient-list", authenticate, (req, res) => {
       limit: pageSize,
       skip: pageSize * Math.max(0, page - 1),
       sort: {
-        created_at: -1,
+        last_messaged_at: -1,
       },
     },
     (err, patients) => {

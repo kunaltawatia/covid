@@ -36,6 +36,7 @@ const PatientSchema = new Schema({
     longitude: Number,
     ip: String,
     created_at: Number,
+    last_messaged_at: Number,
     chat_id: String,
     doctor: String,
     hospital: String,
