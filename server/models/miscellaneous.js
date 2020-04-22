@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 // create a schema
 const HitSchema = new Schema({
-    hits: Number
+	hits: Number
 });
 
 // create and export the model

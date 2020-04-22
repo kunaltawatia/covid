@@ -1406,9 +1406,6 @@ footer {
       color: $cherry;
       background-color: $cherry-light;
     }
-    .link {
-      text-decoration: none;
-    }
   }
   .profile {
     position: absolute;
@@ -1416,11 +1413,14 @@ footer {
     right: 10px;
     h6 {
       font-weight: 400;
-      color: $cherry;
-      background-color: $cherry-light;
+      color: $blue;
+      background-color: $blue-light;
     }
     .link {
       text-decoration: none;
+      :hover{
+        background-color: $blue-hover;
+      }
     }
   }
 }

@@ -4,12 +4,12 @@ const { Schema } = mongoose;
 
 // create a schema
 const AdminSchema = new Schema({
-    username: {
-        type: String,
-        required: true,
-        unique: true
-    },
-    password: String
+	username: {
+		type: String,
+		required: true,
+		unique: true
+	},
+	password: String
 });
 
 // create the model
