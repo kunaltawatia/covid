@@ -145,7 +145,7 @@ export default class Chat extends React.Component {
 
 		this.setState({ requesting: true });
 
-		this.socket = client('/', {
+		this.socket = client(process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/', {
 			path: '/app_chat',
 			transports: ['websocket'],
 			query: {
@@ -477,7 +477,13 @@ export default class Chat extends React.Component {
 							</button>
 						) : null}
 						<div style={{ width: 0, height: 0, overflow: 'hidden' }}>
-							<input type="file" id="imageInput" name="imageInput" onChange={this.imageUpload} />
+							<input
+								type="file"
+								id="imageInput"
+								name="imageInput"
+								onChange={this.imageUpload}
+								accept="image/*"
+							/>
 						</div>
 					</form>
 				</div>

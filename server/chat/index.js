@@ -8,7 +8,7 @@ io.adapter(redisAdapter({ host: 'localhost', port: 6379 }));
 const Patient = require('../models/patient');
 const Doctor = require('../models/doctor');
 
-const { mail } = require('../helper/mail');
+const { mail, mailPatient } = require('../helper/mail');
 
 Patient.updateMany({}, { $set: { chat_id: '' } }, (err, res) => {
 	if (err) return console.error(err);
@@ -139,6 +139,7 @@ io.on('connection', function (socket) {
 							} else {
 								Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doc) => {
 									if (err) return console.error(err);
+									socket.emit('userDisconnected');
 									doctorFree(username, doctor.hospital);
 								});
 							}
@@ -222,7 +223,7 @@ io.on('connection', function (socket) {
 					setTimeout(() => {
 						enterPatient(patient._id, patient.hospital, doctor_username);
 						doctorFree(doctor.username, doctor.hospital);
-					}, 1000);
+					}, 2000);
 				}
 			);
 		});
@@ -232,13 +233,26 @@ io.on('connection', function (socket) {
 	socket.on('message', (message) => {
 		if (type === 'doctor') {
 			getDoctorsPatient(username, (patient_chat_id, patientId) => {
-				socket.to(patient_chat_id).emit('message', message);
+				if (patient_chat_id) {
+					socket.to(patient_chat_id).emit('message', message);
+				}
 				Patient.findById(patientId, (err, patient) => {
 					if (err || !patient) return console.error(err);
+					if (!patient_chat_id) {
+						const { last_messaged_at = Date.now() + 2000, last_notified_at = Date.now() } = patient;
+						if (last_messaged_at > last_notified_at) {
+							mailPatient(
+								patientId,
+								'डॉक्टर से संदेश!',
+								'डॉक्टर ने हाल ही में आपको संदेश भेजे हैं, कृपया http://covid.iitj.ac.in पर अपना परामर्श जारी रखें'
+							);
+						}
+					}
 					patient.chat.push({
 						statement: message,
 						type: 'incoming'
 					});
+					if (patient_chat_id) patient.last_notified_at = Date.now();
 					patient.save((err) => {
 						if (err) console.error(err);
 					});
@@ -315,16 +329,17 @@ io.on('connection', function (socket) {
 
 		if (type === 'patient' && patientId) {
 			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				setTimeout(() => {
-					Doctor.findOneAndUpdate(
-						{ chat_id: doctor_chat_id, attending: patientId },
-						{ $set: { attending: '' } },
-						(err, doctor) => {
-							if (err) return console.error(err);
-							if (doctor) doctorFree(doctor.username, doctor.hospital);
+				Doctor.findOneAndUpdate(
+					{ chat_id: doctor_chat_id, attending: patientId },
+					{ $set: { attending: '' } },
+					(err, doctor) => {
+						if (err) return console.error(err);
+						if (doctor) {
+							io.to(doctor_chat_id).emit('userDisconnected');
+							doctorFree(doctor.username, doctor.hospital);
 						}
-					);
-				}, 2000);
+					}
+				);
 			});
 
 			disconnectPatient(patientId);

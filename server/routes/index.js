@@ -2,7 +2,19 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const upload = multer({ dest: 'public/images/' });
+const crypto = require('crypto');
+const storage = multer.diskStorage({
+	destination: function (req, file, cb) {
+		cb(null, 'public/images/');
+	},
+	filename: function (req, file, cb) {
+		const name = file.originalname.split('.'),
+			customFileName = crypto.randomBytes(18).toString('hex');
+		const extension = name[name.length - 1];
+		cb(null, customFileName + '.' + extension);
+	}
+});
+const upload = multer({ storage });
 
 const { answersToModel, getId } = require('../helper');
 const { mail } = require('../helper/mail');
@@ -104,9 +116,10 @@ router.post('/assessment', (req, res) => {
 						longitude,
 						ip: req.headers['x-real-ip'] || req.ip,
 						created_at: Date.now(),
-						last_messaged_at: Date.now(),
+						last_notified_at: Date.now() - 2000,
 						chat_id: '',
 						doctor: doc.username,
+						last_messaged_at: Date.now(),
 						chat: chat.slice(4)
 					},
 					(err, patient) => {
@@ -201,9 +214,9 @@ router.get('/questions', (req, res) => {
 router.get('/patient-list', authenticate, (req, res) => {
 	const { page } = req.query;
 	const pageSize = 30;
-	const { hospital } = req.user;
+	const { username: doctor } = req.user;
 	Patient.find(
-		{ hospital },
+		{ doctor },
 		{ chat: 0 },
 		{
 			limit: pageSize,
