@@ -10,16 +10,6 @@ function Acknowledgement(props) {
 			</div>
 
 			<div className="faq fadeInUp" style={{ animationDelay: `0.5s` }}>
-				<h2 className="question">मेंटर्स</h2>
-				<h2>Prof. Santanu Chaudhury</h2>
-				<h2 className="answer">निदेशक, IIT जोधपुर</h2>
-				<h3>प्रोफेसर, संगणक विज्ञान एवं अभियांत्रिकी विभाग, IIT जोधपुर</h3>
-				<h3>प्रोफेसर, विद्युत अभियान्त्रिकी विभाग, IIT दिल्ली (लिअन)</h3>
-				<h3>पूर्व निदेशक, सीएसआईआर-सीईईआरआई पिलानी</h3>
-				<h3>FNAE, FNASc, FIAPR</h3>
-			</div>
-			<br />
-			<div className="faq fadeInUp" style={{ animationDelay: `0.5s` }}>
 				<h2 className="question">तकनीकी टीम</h2>
 				<div className="portfolio-holder">
 					<img className="portfolio" src="/images/kunal.jpg"></img>
@@ -27,7 +17,7 @@ function Acknowledgement(props) {
 						<a href="http://home.iitj.ac.in/~tawatia.1" target="_noblank">
 							<h2>Kunal Tawatia</h2>
 						</a>
-						<h2 className="answer">डेवलपर</h2>
+						<h2 className="answer">डिवेलॅप्मॅन्ट एवं इंजीनियरिंग</h2>
 						<h3>
 							B.Tech. CSE 2018
 							<br />
@@ -35,6 +25,16 @@ function Acknowledgement(props) {
 						</h3>
 					</div>
 				</div>
+			</div>
+			<br />
+			<div className="faq fadeInUp" style={{ animationDelay: `0.5s` }}>
+				<h2 className="question">मेंटर्स</h2>
+				<h2>Prof. Santanu Chaudhury</h2>
+				<h2 className="answer">निदेशक, IIT जोधपुर</h2>
+				<h3>प्रोफेसर, संगणक विज्ञान एवं अभियांत्रिकी विभाग, IIT जोधपुर</h3>
+				<h3>प्रोफेसर, विद्युत अभियान्त्रिकी विभाग, IIT दिल्ली (लिअन)</h3>
+				<h3>पूर्व निदेशक, सीएसआईआर-सीईईआरआई पिलानी</h3>
+				<h3>FNAE, FNASc, FIAPR</h3>
 				<br />
 				<div className="portfolio-holder">
 					<img className="portfolio" src="/images/sumitk.jpg"></img>

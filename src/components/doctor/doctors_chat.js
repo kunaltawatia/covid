@@ -18,7 +18,7 @@ export default class Chat extends React.Component {
 	state = {
 		loading: true,
 		chatStarted: false,
-		user: null,
+		patientId: null,
 		incomingTyping: false,
 		chat: [],
 		textAnswered: '',
@@ -59,10 +59,10 @@ export default class Chat extends React.Component {
 	sendMessage = (e) => {
 		if (e && e.preventDefault) e.preventDefault();
 
-		const { textAnswered } = this.state;
+		const { textAnswered, patientId } = this.state;
 		if (textAnswered.length) {
 			this.setState({ textAnswered: '' });
-			this.socket.emit('message', textAnswered);
+			this.socket.emit('message', { message: textAnswered, to: patientId });
 			this.enterMessageIntoChat(textAnswered, 'outgoing');
 		}
 	};
@@ -82,30 +82,24 @@ export default class Chat extends React.Component {
 	};
 
 	connect = () => {
-		const { username, hospital } = this.props;
+		const { username } = this.props;
 
 		this.socket = client(process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '/', {
 			path: '/app_chat',
 			transports: ['websocket'],
 			query: {
 				type: 'doctor',
-				username,
-				hospital
+				username
 			}
 		});
 
-		this.socket.on('userAlloted', (user) => {
-			this.setState({
-				loading: false,
-				user
-			});
-		});
-
-		this.socket.on('chatsFromUser', (data) => {
-			let { chat } = JSON.parse(data);
-			if (chat)
+		this.socket.on('userAlloted', ({ patientId, chat }) => {
+			if (patientId && chat)
 				this.setState(
 					{
+						loading: false,
+						textAnswered: '',
+						patientId,
 						chat: chat.map(({ statement, type }) => {
 							return {
 								statement,
@@ -121,7 +115,7 @@ export default class Chat extends React.Component {
 			this.endCall(false);
 			this.setState({
 				loading: true,
-				user: null,
+				patientId: null,
 				chat: [
 					{
 						statement: 'हम आपके परामर्श के लिए रोगियों को खोज रहे हैं',
@@ -135,40 +129,44 @@ export default class Chat extends React.Component {
 			this.setState({ onlineUsers });
 		});
 
-		this.socket.on('message', (text) => {
-			this.setState({ incomingTyping: false });
-			this.enterMessageIntoChat(text, 'incoming');
+		this.socket.on('message', ({ message, from }) => {
+			if (from === this.state.patientId) {
+				this.setState({ incomingTyping: false });
+				this.enterMessageIntoChat(message, 'incoming');
+			}
 		});
 
-		this.socket.on('typingChange', (state) => {
-			this.setState({ incomingTyping: state });
-			this.scrollDown();
+		this.socket.on('typingChange', ({ state, from }) => {
+			if (from === this.state.patientId) {
+				this.setState({ incomingTyping: state });
+				this.scrollDown();
+			}
 		});
 
-		this.socket.on('inactivity', () => {
-			this.socket.disconnect();
-			this.endCall(false);
-			this.setState({ user: false, loading: true });
+		this.socket.on('request', (from) => {
+			if (from === this.state.patientId) {
+				this.setState({ callModal: 'active' });
+				this.scrollDown();
+			}
 		});
 
-		this.socket.on('request', () => {
-			this.setState({ callModal: 'active' });
-			this.scrollDown();
+		this.socket.on('call', ({ data, from }) => {
+			if (from === this.state.patientId) {
+				if (data.sdp) {
+					this.pc.setRemoteDescription(data.sdp);
+					if (data.sdp.type === 'offer') this.pc.createAnswer();
+				} else this.pc.addIceCandidate(data.candidate);
+			}
 		});
 
-		this.socket.on('call', (data) => {
-			if (data.sdp) {
-				this.pc.setRemoteDescription(data.sdp);
-				if (data.sdp.type === 'offer') this.pc.createAnswer();
-			} else this.pc.addIceCandidate(data.candidate);
+		this.socket.on('end', (from) => {
+			if (from === this.state.patientId) this.endCall(false);
 		});
-
-		this.socket.on('end', this.endCall.bind(this, false));
 	};
 
 	startCall = (isCaller, config) => {
 		this.config = config;
-		this.pc = new PeerConnection(this.socket)
+		this.pc = new PeerConnection(this.socket, this.state.patientId)
 			.on('localStream', (src) => {
 				const newState = { callWindow: 'active', localSrc: src };
 				if (!isCaller) newState.callModal = '';
@@ -179,8 +177,8 @@ export default class Chat extends React.Component {
 	};
 
 	rejectCall = () => {
-		const { callFrom } = this.state;
-		this.socket.emit('end', { to: callFrom });
+		const { patientId } = this.state;
+		this.socket.emit('end', patientId);
 		this.setState({ callModal: '' });
 	};
 
@@ -206,8 +204,8 @@ export default class Chat extends React.Component {
 	};
 
 	referUser = () => {
-		const { doctorSelected } = this.state;
-		this.socket.emit('referUser', doctorSelected);
+		const { doctorSelected, patientId } = this.state;
+		this.socket.emit('referUser', { doctorSelected, patientId });
 	};
 
 	componentWillUnmount() {
@@ -216,15 +214,15 @@ export default class Chat extends React.Component {
 
 	handleMessageChange = (event) => {
 		const { id, value } = event.target;
-		const { textAnswered, user } = this.state;
+		const { textAnswered, patientId } = this.state;
 
 		this.setState({
 			[id]: value
 		});
 
-		if (user) {
+		if (patientId) {
 			if ((value.length === 0) ^ (textAnswered.length === 0)) {
-				this.socket.emit('typingChange', value.length > 0);
+				this.socket.emit('typingChange', { state: value.length > 0, to: patientId });
 			}
 		}
 	};
@@ -241,6 +239,7 @@ export default class Chat extends React.Component {
 		const file = event.target.files[0];
 		if (!file || !this.socket) return;
 		this.setState({ uploadingImage: 0.01 });
+		const { patientId } = this.state;
 
 		const formData = new FormData();
 		formData.append('image', file);
@@ -257,7 +256,7 @@ export default class Chat extends React.Component {
 				const { image } = response.data;
 				if (this.socket) {
 					this.enterMessageIntoChat('chat-img-' + image.filename, 'outgoing');
-					this.socket.emit('message', 'chat-img-' + image.filename);
+					this.socket.emit('message', { message: 'chat-img-' + image.filename, to: patientId });
 				}
 				this.setState({ uploadingImage: 0, ...(image ? { image } : {}) });
 			})
@@ -301,7 +300,7 @@ export default class Chat extends React.Component {
 	};
 
 	renderAnswers = () => {
-		const { textAnswered, loading, user, uploadingImage } = this.state;
+		const { textAnswered, loading, patientId, uploadingImage } = this.state;
 
 		const callWithVideo = (video) => {
 			const config = { audio: true, video };
@@ -318,7 +317,7 @@ export default class Chat extends React.Component {
 			);
 		}
 
-		if (user)
+		if (patientId)
 			return (
 				<div className="answer-box text-row fadeInUp" style={{ animationDelay: '1s' }}>
 					<form onSubmit={this.sendMessage} className="message-form">
@@ -422,7 +421,7 @@ export default class Chat extends React.Component {
 	};
 
 	render() {
-		const { user, chatStarted } = this.state;
+		const { patientId, chatStarted } = this.state;
 		const { callWindow, localSrc, peerSrc } = this.state;
 
 		if (!chatStarted)
@@ -457,20 +456,22 @@ export default class Chat extends React.Component {
 					config={this.config}
 					mediaDevice={this.pc.mediaDevice}
 					endCall={this.endCall}
-					socket={this.socket}
 				/>
 			);
 		}
 		return (
 			<div className="Chat fadeInUp" style={{ animationDelay: '0.7s', marginBottom: '8rem' }}>
-				{user ? (
-					<button className="close-icon" onClick={this.disconnectUser}>
-						<Icon.XCircle />
-					</button>
+				{patientId ? (
+					<>
+						<h6 style={{ margin: 0, marginBottom: 6 }}>{patientId}</h6>
+						<button className="close-icon" onClick={this.disconnectUser}>
+							<Icon.XCircle />
+						</button>
+					</>
 				) : null}
 				{this.renderChat()}
 				{this.renderAnswers()}
-				{user && this.renderActions()}
+				{patientId && this.renderActions()}
 			</div>
 		);
 	}

@@ -116,27 +116,27 @@ export default class Chat extends React.Component {
 	};
 
 	sendMessage = (e) => {
-		const { textAnswered } = this.state;
+		const { textAnswered, doctor } = this.state;
 
 		if (e && e.preventDefault) e.preventDefault();
 
 		if (textAnswered.length) {
 			this.setState({ textAnswered: '' });
-			this.socket.emit('message', textAnswered);
+			this.socket.emit('message', { message: textAnswered, to: doctor });
 			this.enterMessageIntoChat(textAnswered, 'outgoing');
 		}
 	};
 
 	handleMessageChange = (event) => {
 		const { id, value } = event.target;
-		const { textAnswered } = this.state;
+		const { textAnswered, doctor } = this.state;
 
 		this.setState({
 			[id]: value
 		});
 
 		if ((value.length === 0) ^ (textAnswered.length === 0)) {
-			this.socket.emit('typingChange', value.length > 0);
+			this.socket.emit('typingChange', { state: value.length > 0, to: doctor });
 		}
 	};
 
@@ -157,6 +157,7 @@ export default class Chat extends React.Component {
 		this.socket.on('doctorAlloted', (doctor) => {
 			this.setState({
 				answerBoxHidden: false,
+				requesting: false,
 				doctor
 			});
 		});
@@ -165,44 +166,49 @@ export default class Chat extends React.Component {
 			this.setState({ onlineUsers });
 		});
 
-		this.socket.on('message', (text) => {
-			this.setState({ incomingTyping: false, requesting: false });
-			this.enterMessageIntoChat(text, 'incoming');
+		this.socket.on('message', ({ message, from }) => {
+			if (from === this.state.doctor) {
+				this.setState({ incomingTyping: false });
+				this.enterMessageIntoChat(message, 'incoming');
+			}
 		});
 
-		this.socket.on('typingChange', (state) => {
-			this.setState({ incomingTyping: state });
-			this.scrollDown();
+		this.socket.on('typingChange', ({ state, from }) => {
+			if (from === this.state.doctor) {
+				this.setState({ incomingTyping: state });
+				this.scrollDown();
+			}
 		});
 
-		this.socket.on('userDisconnected', () => {
+		this.socket.on('referUser', (doctor) => {
 			this.endCall(false);
-			this.setState({ doctor: false, answerBoxHidden: true });
+			this.setState({ doctor, answerBoxHidden: true });
 		});
 
-		this.socket.on('referUser', () => {
-			this.endCall(false);
-			this.setState({ doctor: false, answerBoxHidden: true });
+		this.socket.on('request', (from) => {
+			if (from === this.state.doctor) {
+				this.setState({ callModal: 'active' });
+				this.scrollDown();
+			}
 		});
 
-		this.socket.on('request', () => {
-			this.setState({ callModal: 'active' });
-			this.scrollDown();
+		this.socket.on('call', ({ data, from }) => {
+			if (from === this.state.doctor) {
+				if (data.sdp) {
+					this.pc.setRemoteDescription(data.sdp);
+					if (data.sdp.type === 'offer') this.pc.createAnswer();
+				} else this.pc.addIceCandidate(data.candidate);
+			}
 		});
 
-		this.socket.on('call', (data) => {
-			if (data.sdp) {
-				this.pc.setRemoteDescription(data.sdp);
-				if (data.sdp.type === 'offer') this.pc.createAnswer();
-			} else this.pc.addIceCandidate(data.candidate);
+		this.socket.on('end', (from) => {
+			if (from === this.state.doctor) this.endCall(false);
 		});
-
-		this.socket.on('end', this.endCall.bind(this, false));
 	};
 
 	startCall = (isCaller, config) => {
 		this.config = config;
-		this.pc = new PeerConnection(this.socket)
+		this.pc = new PeerConnection(this.socket, this.state.doctor)
 			.on('localStream', (src) => {
 				const newState = { callWindow: 'active', localSrc: src };
 				if (!isCaller) newState.callModal = '';
@@ -213,8 +219,8 @@ export default class Chat extends React.Component {
 	};
 
 	rejectCall = () => {
-		const { callFrom } = this.state;
-		this.socket.emit('end', { to: callFrom });
+		const { doctor } = this.state;
+		this.socket.emit('end', doctor);
 		this.setState({ callModal: '' });
 	};
 
@@ -345,6 +351,7 @@ export default class Chat extends React.Component {
 		const file = event.target.files[0];
 		if (!file || !this.socket) return;
 		this.setState({ uploadingImage: 0.01 });
+		const { doctor } = this.state;
 
 		const formData = new FormData();
 		formData.append('image', file);
@@ -361,7 +368,7 @@ export default class Chat extends React.Component {
 				const { image } = response.data;
 				if (this.socket) {
 					this.enterMessageIntoChat('chat-img-' + image.filename, 'outgoing');
-					this.socket.emit('message', 'chat-img-' + image.filename);
+					this.socket.emit('message', { message: 'chat-img-' + image.filename, to: doctor });
 				}
 				this.setState({ uploadingImage: 0, ...(image ? { image } : {}) });
 			})
@@ -557,7 +564,6 @@ export default class Chat extends React.Component {
 					config={this.config}
 					mediaDevice={this.pc.mediaDevice}
 					endCall={this.endCall}
-					socket={this.socket}
 				/>
 			);
 		}

@@ -103,6 +103,9 @@ function App() {
 						<a href="https://www.mohfw.gov.in/" target="_noblank">
 							<img src="/images/mohfw-logo.jpg" className="mohfw-logo" />
 						</a>
+						<a href="https://www.covid19india.org/" target="_noblank">
+							<img src="/images/covid19.ico" className="mohfw-logo" />
+						</a>
 					</div>
 				</div>
 				<div class="hits">
@@ -110,7 +113,7 @@ function App() {
 				</div>
 				<div class="profile">
 					<a href="http://home.iitj.ac.in/~tawatia.1" target="_noblank" className="link">
-						<h6 className="sources">© 2020 Copyright: Kunal Tawatia</h6>
+						<h6 className="sources">© 2020 Created By: Kunal Tawatia</h6>
 					</a>
 				</div>
 			</footer>

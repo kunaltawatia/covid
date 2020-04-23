@@ -10,8 +10,11 @@ function Table({ username, changePatient }) {
 	const [page, setPage] = useState(1);
 
 	useEffect(() => {
-		getPatients();
-	}, [1]);
+		const timer = setInterval(() => {
+			getPatients();
+		}, 20 * 1000);
+		return () => clearInterval(timer);
+	}, []);
 	useEffect(() => {
 		getPatients();
 	}, [page]);

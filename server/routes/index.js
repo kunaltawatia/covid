@@ -71,31 +71,20 @@ router.post('/assessment', (req, res) => {
 				return res.json({
 					incomingChats: [
 						{
-							statement: 'हम आपके पिछले रिकॉर्ड नहीं ढूंढ पा रहे हैं',
+							statement: 'हम आपके पिछले रिकॉर्ड नहीं ढूंढ पा रहे हैं 🙁',
 							type: 'incoming'
 						}
 					]
 				});
 			}
-			const { suspect, _id, type, doctor, hospital, name, telephone } = patient;
-			if (doctor) {
-				mail(
-					doctor,
-					'Your Patient is Online',
-					`Your patient ${name.toUpperCase()}, ${telephone}, has paid a visit, and is waiting for you.`
-				);
-			} else {
-				Doctor.findOne({ hospital }, (err, doc) => {
-					if (err || !doc) return console.error(err);
-					mail(
-						doc.username,
-						'Your Patient is Online',
-						`Your patient ${name.toUpperCase()}, ${telephone}, has paid a visit, and is waiting for you.`
-					);
-				});
-			}
+			const { _id, doctor, name, telephone } = patient;
+			mail(
+				doctor,
+				'Your Patient is Online',
+				`Your patient ${name.toUpperCase()}, ${telephone}, has paid a visit, and is waiting for you.`
+			);
 			res.json({
-				connectToDoctor: suspect || type === 'OPD',
+				connectToDoctor: true,
 				patientId: _id,
 				incomingChats: patient.chat,
 				question: questions[questions.length - 1]
@@ -106,7 +95,15 @@ router.post('/assessment', (req, res) => {
 			const { name, telephone, hospital } = model;
 
 			Doctor.findOne({ hospital }, (err, doc) => {
-				if (err || !doc) return console.error(err);
+				if (err || !doc)
+					return res.json({
+						incomingChats: [
+							{
+								statement: 'हम किसी भी डॉक्टर का पता नहीं लगा सके 🙁',
+								type: 'incoming'
+							}
+						]
+					});
 
 				Patient.create(
 					{
@@ -125,10 +122,17 @@ router.post('/assessment', (req, res) => {
 					(err, patient) => {
 						if (err) {
 							console.error(err);
-							return res.json({ incomingChats: [] });
+							return res.json({
+								incomingChats: [
+									{
+										statement: 'हम किसी भी डॉक्टर का पता नहीं लगा सके 🙁',
+										type: 'incoming'
+									}
+								]
+							});
 						}
 
-						const { suspect, _id, type } = patient;
+						const { _id } = patient;
 
 						req.session.patientId = patient;
 
@@ -141,31 +145,13 @@ router.post('/assessment', (req, res) => {
 						res.json({
 							question: questions[questions.length - 1],
 							patientId: _id,
-							connectToDoctor: suspect || type === 'OPD',
-							incomingChats: suspect
-								? [
-										{
-											statement: 'हमें संदेह है कि आप नए कोरोना वायरस से संक्रमित होंगे',
-											type: 'incoming'
-										}
-								  ]
-								: type === 'OPD'
-								? []
-								: [
-										{
-											statement: 'आपको कोरोना वायरस से संक्रमित होने का तत्काल खतरा नहीं है :)',
-											type: 'incoming'
-										},
-										{
-											statement:
-												'कृपया स्वास्थ्य मंत्रालय द्वारा जारी इस वेबसाइट में नीचे दिए गए पोस्टर को देखें, और स्वच्छता का अच्छे से ध्यान रखें',
-											type: 'incoming'
-										},
-										{
-											statement: 'धन्यवाद',
-											type: 'incoming'
-										}
-								  ]
+							connectToDoctor: true,
+							incomingChats: [
+								{
+									statement: `अब आप ${doc.name} से बात करेंगे,`,
+									type: 'incoming'
+								}
+							]
 						});
 					}
 				);
@@ -202,7 +188,7 @@ router.get('/questions', (req, res) => {
 					type: 'incoming'
 				},
 				{
-					statement: 'आपका स्वागत है',
+					statement: 'आपका स्वागत है 👩‍⚕️',
 					type: 'incoming'
 				}
 			]

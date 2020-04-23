@@ -2,7 +2,6 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
-const cors = require('cors');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const mongoose = require('mongoose');
@@ -23,7 +22,6 @@ const adminRouter = require('./routes/admin');
 
 const app = express();
 
-app.use(cors());
 app.use(
 	session({
 		store: new MongoStore({ mongooseConnection: mongoose.connection }),

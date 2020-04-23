@@ -18,27 +18,19 @@ function giveDoctorAPatient(username, patientId) {
 	Doctor.findOneAndUpdate({ username }, { $set: { attending: patientId } }, (err, doctor) => {
 		if (err || !doctor) return console.error(err);
 		const { chat_id } = doctor;
-		io.to(chat_id).emit('userAlloted', patientId);
-		Patient.findById(patientId, (err, patient) => {
-			if (err || !patient) return console.error(err);
-			const { chat } = patient;
-			io.to(chat_id).emit('chatsFromUser', JSON.stringify({ chat }));
-		});
-	});
-}
-
-function givePatientADoctor(patientId, username) {
-	Patient.findByIdAndUpdate(patientId, { $set: { doctor: username } }, (err, patient) => {
-		if (err || !patient) return console.error(err);
-		const { chat_id } = patient;
-		io.to(chat_id).emit('doctorAlloted', username);
-		io.to(chat_id).emit('message', 'आप अब डॉक्टर से बात कर रहे है, अपनी बात कहिये');
+		if (chat_id) {
+			Patient.findById(patientId, (err, patient) => {
+				if (err || !patient || !patient.chat) return console.error(err);
+				const { chat } = patient;
+				io.to(chat_id).emit('userAlloted', { patientId, chat });
+			});
+		}
 	});
 }
 
 function doctorFree(username, hospital) {
 	Patient.find(
-		{ doctor: { $in: ['', username] }, hospital, chat_id: { $ne: '' } },
+		{ doctor: username, hospital, chat_id: { $ne: '' } },
 		{},
 		{ limit: 1, sort: { created_at: 1 } },
 		(err, patients) => {
@@ -46,31 +38,22 @@ function doctorFree(username, hospital) {
 			if (patients[0]) {
 				const { _id } = patients[0];
 				giveDoctorAPatient(username, _id);
-				givePatientADoctor(_id, username);
-			} else {
-				/* no patient found */
 			}
 		}
 	);
 }
 
-function enterPatient(patientId, hospital, username = null) {
+function enterPatient(patientId, hospital, username) {
 	Doctor.findOne(
 		{
-			...(username ? { username } : {}),
-			attending: { $in: ['', patientId] },
+			username,
+			attending: '',
 			hospital,
 			chat_id: { $ne: '' }
 		},
 		(err, doctor) => {
-			if (err) return console.error(err);
-			if (doctor) {
-				const { username } = doctor;
-				giveDoctorAPatient(username, patientId);
-				givePatientADoctor(patientId, username);
-			} else {
-				/* no doctor found */
-			}
+			if (err || !doctor) return console.error(err);
+			giveDoctorAPatient(username, patientId);
 		}
 	);
 }
@@ -86,28 +69,6 @@ function getDoctorSocketById(username, callback) {
 	Doctor.findOne({ username }, (err, doctor) => {
 		if (err || !doctor) callback(null);
 		else callback(doctor.chat_id);
-	});
-}
-
-function getDoctorsPatient(username, callback) {
-	Doctor.findOne({ username }, (err, doctor) => {
-		if (err || !doctor) callback(null);
-		else {
-			getPatientSocketById(doctor.attending, (chat_id) => {
-				callback(chat_id, doctor.attending);
-			});
-		}
-	});
-}
-
-function getPatientsDoctor(patientId, callback) {
-	Patient.findById(patientId, (err, patient) => {
-		if (err || !patient) callback(null);
-		else {
-			getDoctorSocketById(patient.doctor, (chat_id) => {
-				callback(chat_id);
-			});
-		}
 	});
 }
 
@@ -131,32 +92,20 @@ io.on('connection', function (socket) {
 			else {
 				if (!doctor.attending) doctorFree(username, doctor.hospital);
 				else {
-					setTimeout(() => {
-						getPatientSocketById(doctor.attending, (patient_chat_id) => {
-							if (patient_chat_id) {
-								giveDoctorAPatient(username, doctor.attending);
-								givePatientADoctor(doctor.attending, username);
-							} else {
-								Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doc) => {
-									if (err) return console.error(err);
-									socket.emit('userDisconnected');
-									doctorFree(username, doctor.hospital);
-								});
-							}
-						});
-					}, 2000);
+					giveDoctorAPatient(username, doctor.attending);
 				}
 			}
 		});
 	} else if (type === 'patient' && patientId) {
-		socket.emit('message', 'हम आपके परामर्श के लिए डॉक्टरों की खोज कर रहे हैं');
 		Patient.findByIdAndUpdate(patientId, { $set: { chat_id: socket.id } }, (err, patient) => {
 			if (err || !patient) return socket.disconnect();
 			else {
 				const { doctor, hospital } = patient;
-				if (doctor) enterPatient(patientId, hospital, doctor);
-				else {
-					enterPatient(patientId, hospital);
+				if (doctor) {
+					socket.emit('doctorAlloted', doctor);
+					enterPatient(patientId, hospital, doctor);
+				} else {
+					socket.disconnect();
 				}
 			}
 		});
@@ -168,99 +117,73 @@ io.on('connection', function (socket) {
 	socket.on('disconnectUser', () => {
 		socket.emit('userDisconnected');
 
-		getDoctorsPatient(username, (patient_chat_id) => {
-			if (patient_chat_id) {
-				socket.to(patient_chat_id).emit('message', 'आपसे डॉक्टर ने बात रद्द करदी है');
-				socket.to(patient_chat_id).emit('userDisconnected');
-				io.sockets.sockets[patient_chat_id].disconnect();
-			} else {
-				Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doctor) => {
-					if (err || !doctor) return console.error(err);
-					doctorFree(doctor.username, doctor.hospital);
-				});
-			}
+		Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doctor) => {
+			if (err || !doctor) return console.error(err);
 		});
 	});
 
 	socket.on('changePatient', (patient) => {
-		getDoctorsPatient(username, (patient_chat_id) => {
-			if (patient_chat_id) {
-				socket.to(patient_chat_id).emit('message', 'आपसे डॉक्टर ने बात रद्द करदी है');
-				socket.to(patient_chat_id).emit('userDisconnected');
-				io.sockets.sockets[patient_chat_id].disconnect();
-			}
-			giveDoctorAPatient(username, patient);
-			givePatientADoctor(patient, username);
-		});
+		giveDoctorAPatient(username, patient);
 	});
 
-	socket.on('referUser', (doctor_username) => {
-		getDoctorsPatient(username, (patient_chat_id) => {
-			if (!patient_chat_id) return;
-			socket
-				.to(patient_chat_id)
-				.emit('message', 'आपके परामर्श को किसी अन्य चिकित्सक को भेजा जाता है');
-			socket.to(patient_chat_id).emit('message', 'हम दूसरे डॉक्टर की प्रतीक्षा कर रहे हैं');
-			socket.to(patient_chat_id).emit('referUser');
-		});
-
-		socket.emit('userDisconnected');
-
+	socket.on('referUser', ({ doctorSelected, patientId }) => {
 		Doctor.findOneAndUpdate({ username }, { $set: { attending: '' } }, (err, doctor) => {
 			if (err || !doctor) return console.error(err);
+			socket.emit('userDisconnected');
 			const { name: doctorsname } = doctor;
-			Patient.findByIdAndUpdate(
-				doctor.attending,
-				{ $set: { doctor: doctor_username } },
-				(err, patient) => {
-					if (err || !patient) return console.error(err);
-					const { name: patientsname, telephone } = patient;
-					mail(
-						doctor_username,
-						'New Patient',
-						`Patient ${patientsname}, ${telephone}, was reffered to you by ${doctorsname}.`
-					);
-					setTimeout(() => {
-						enterPatient(patient._id, patient.hospital, doctor_username);
-						doctorFree(doctor.username, doctor.hospital);
-					}, 2000);
+			Patient.findByIdAndUpdate(patientId, { $set: { doctor: doctorSelected } }, (err, patient) => {
+				if (err || !patient) return console.error(err);
+				const { name: patientsname, telephone, chat_id } = patient;
+				mail(
+					doctorSelected,
+					'New Patient',
+					`Patient ${patientsname}, ${telephone}, was reffered to you by ${doctorsname}.`
+				);
+				if (chat_id) {
+					socket.to(chat_id).emit('message', 'आपके परामर्श को किसी अन्य चिकित्सक को भेजा जाता है');
+					socket.to(chat_id).emit('referUser', doctorSelected);
+					enterPatient(patient._id, patient.hospital, doctorSelected);
 				}
-			);
+			});
 		});
 	});
 
 	/* common */
-	socket.on('message', (message) => {
+	socket.on('message', ({ message, to }) => {
 		if (type === 'doctor') {
-			getDoctorsPatient(username, (patient_chat_id, patientId) => {
-				if (patient_chat_id) {
-					socket.to(patient_chat_id).emit('message', message);
-				}
-				Patient.findById(patientId, (err, patient) => {
-					if (err || !patient) return console.error(err);
-					if (!patient_chat_id) {
-						const { last_messaged_at = Date.now() + 2000, last_notified_at = Date.now() } = patient;
-						if (last_messaged_at > last_notified_at) {
-							mailPatient(
-								patientId,
-								'डॉक्टर से संदेश!',
-								'डॉक्टर ने हाल ही में आपको संदेश भेजे हैं, कृपया http://covid.iitj.ac.in पर अपना परामर्श जारी रखें'
-							);
-						}
+			Patient.findById(to, (err, patient) => {
+				if (err || !patient) return console.error(err);
+
+				const { chat_id, _id } = patient;
+				if (!chat_id) {
+					const { last_messaged_at = Date.now() + 2000, last_notified_at = Date.now() } = patient;
+					if (last_messaged_at > last_notified_at) {
+						mailPatient(
+							_id,
+							'डॉक्टर से संदेश!',
+							'डॉक्टर ने हाल ही में आपको संदेश भेजे हैं, कृपया http://covid.iitj.ac.in पर अपना परामर्श जारी रखें'
+						);
 					}
-					patient.chat.push({
-						statement: message,
-						type: 'incoming'
-					});
-					if (patient_chat_id) patient.last_notified_at = Date.now();
-					patient.save((err) => {
-						if (err) console.error(err);
-					});
+				} else {
+					socket.to(chat_id).emit('message', { message, from: username });
+					patient.last_notified_at = Date.now();
+				}
+				patient.chat.push({
+					statement: message,
+					type: 'incoming'
+				});
+				patient.save((err) => {
+					if (err) console.error(err);
 				});
 			});
 		} else {
 			Patient.findById(patientId, (err, patient) => {
 				if (err || !patient) return console.error(err);
+				getDoctorSocketById(patient.doctor, (doctor_chat_id) => {
+					if (doctor_chat_id) {
+						socket.to(doctor_chat_id).emit('message', { message, from: patientId });
+					}
+				});
 				patient.chat.push({
 					statement: message,
 					type: 'outgoing'
@@ -270,56 +193,55 @@ io.on('connection', function (socket) {
 					if (err) console.error(err);
 				});
 			});
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				socket.to(doctor_chat_id).emit('message', message);
+		}
+	});
+
+	socket.on('typingChange', ({ state, to }) => {
+		if (type === 'doctor') {
+			getPatientSocketById(to, (patient_chat_id) => {
+				if (patient_chat_id)
+					socket.to(patient_chat_id).emit('typingChange', { state, from: username });
+			});
+		} else {
+			getDoctorSocketById(to, (doctor_chat_id) => {
+				if (doctor_chat_id)
+					socket.to(doctor_chat_id).emit('typingChange', { state, from: patientId });
 			});
 		}
 	});
 
-	socket.on('typingChange', (state) => {
+	socket.on('request', (to) => {
 		if (type === 'doctor') {
-			getDoctorsPatient(username, (patient_chat_id) => {
-				socket.to(patient_chat_id).emit('typingChange', state);
+			getPatientSocketById(to, (patient_chat_id) => {
+				if (patient_chat_id) socket.to(patient_chat_id).emit('request', username);
 			});
 		} else {
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				socket.to(doctor_chat_id).emit('typingChange', state);
+			getDoctorSocketById(to, (doctor_chat_id) => {
+				if (doctor_chat_id) socket.to(doctor_chat_id).emit('request', patientId);
 			});
 		}
 	});
 
-	socket.on('request', () => {
+	socket.on('call', ({ data, to }) => {
 		if (type === 'doctor') {
-			getDoctorsPatient(username, (patient_chat_id) => {
-				socket.to(patient_chat_id).emit('request');
+			getPatientSocketById(to, (patient_chat_id) => {
+				if (patient_chat_id) socket.to(patient_chat_id).emit('call', { data, from: username });
 			});
 		} else {
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				socket.to(doctor_chat_id).emit('request');
+			getDoctorSocketById(to, (doctor_chat_id) => {
+				if (doctor_chat_id) socket.to(doctor_chat_id).emit('call', { data, from: patientId });
 			});
 		}
 	});
 
-	socket.on('call', (data) => {
+	socket.on('end', (to) => {
 		if (type === 'doctor') {
-			getDoctorsPatient(username, (patient_chat_id) => {
-				socket.to(patient_chat_id).emit('call', { ...data, from: username });
+			getPatientSocketById(to, (patient_chat_id) => {
+				if (patient_chat_id) socket.to(patient_chat_id).emit('end', username);
 			});
 		} else {
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				socket.to(doctor_chat_id).emit('call', { ...data, from: patientId });
-			});
-		}
-	});
-
-	socket.on('end', () => {
-		if (type === 'doctor') {
-			getDoctorsPatient(username, (patient_chat_id) => {
-				socket.to(patient_chat_id).emit('end');
-			});
-		} else {
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				socket.to(doctor_chat_id).emit('end');
+			getDoctorSocketById(to, (doctor_chat_id) => {
+				if (doctor_chat_id) socket.to(doctor_chat_id).emit('end', patientId);
 			});
 		}
 	});
@@ -328,33 +250,23 @@ io.on('connection', function (socket) {
 		console.log(type, type === 'patient' ? patientId : username, 'disconnected');
 
 		if (type === 'patient' && patientId) {
-			getPatientsDoctor(patientId, (doctor_chat_id) => {
-				Doctor.findOneAndUpdate(
-					{ chat_id: doctor_chat_id, attending: patientId },
-					{ $set: { attending: '' } },
-					(err, doctor) => {
-						if (err) return console.error(err);
-						if (doctor) {
-							io.to(doctor_chat_id).emit('userDisconnected');
-							doctorFree(doctor.username, doctor.hospital);
-						}
-					}
-				);
-			});
-
 			disconnectPatient(patientId);
-		} else if (type === 'doctor' && username) {
-			getDoctorsPatient(username, (patient_chat_id) => {
-				if (!patient_chat_id) return;
-				socket.to(patient_chat_id).emit('message', 'आपसे डॉक्टर ने बात रद्द करदी है');
-				socket.to(patient_chat_id).emit('userDisconnected');
-				io.sockets.sockets[patient_chat_id].disconnect();
+			Doctor.find({ attending: patientId }, (err, doctor) => {
+				if (err || !doctor) return;
+				getDoctorSocketById(doctor.username, (doctor_chat_id) => {
+					io.to(doctor_chat_id).emit('end', patientId);
+				});
 			});
+		} else if (type === 'doctor' && username) {
 			Doctor.findOneAndUpdate(
 				{ username },
 				{ $set: { attending: '', chat_id: '' } },
 				(err, doctor) => {
 					if (err || !doctor) return console.error(err);
+					const { attending: prevAttending } = doctor;
+					getPatientSocketById(prevAttending, (patient_chat_id) => {
+						io.to(patient_chat_id).emit('end', doctor.username);
+					});
 				}
 			);
 		}
