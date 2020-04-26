@@ -7,10 +7,9 @@ setInterval(() => {
 		.then((response) => response.json())
 		.then((result) => {
 			const obj = {
-				national_stats: result.statewise[0],
-				rajasthan_stats: result.statewise[5]
+				national_stats: result.statewise.filter(({ statecode }) => statecode === 'TT')[0],
+				rajasthan_stats: result.statewise.filter(({ statecode }) => statecode === 'RJ')[0]
 			};
-
 			fs.writeFile(
 				path.join(__dirname, '../data/cases.json'),
 				JSON.stringify(obj),

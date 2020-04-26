@@ -113,7 +113,7 @@ function App() {
 				</div>
 				<div class="profile">
 					<a href="http://home.iitj.ac.in/~tawatia.1" target="_noblank" className="link">
-						<h6 className="sources">© 2020 Created By: Kunal Tawatia</h6>
+						<h6 className="sources">Created By: Kunal Tawatia</h6>
 					</a>
 				</div>
 			</footer>

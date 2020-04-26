@@ -25,17 +25,23 @@ function Acknowledgement(props) {
 						</h3>
 					</div>
 				</div>
+				<div className="portfolio-holder" style={{ marginTop: '2rem' }}>
+					<img
+						className="portfolio"
+						src="/images/software-inn.png"
+						style={{ border: 'none' }}
+					></img>
+					<div>
+						<a href="http://home.iitj.ac.in/~sumitk" target="_noblank">
+							<h2>Software Innovation Lab</h2>
+						</a>
+						<h3>IIT जोधपुर</h3>
+					</div>
+				</div>
 			</div>
 			<br />
 			<div className="faq fadeInUp" style={{ animationDelay: `0.5s` }}>
 				<h2 className="question">मेंटर्स</h2>
-				<h2>Prof. Santanu Chaudhury</h2>
-				<h2 className="answer">निदेशक, IIT जोधपुर</h2>
-				<h3>प्रोफेसर, संगणक विज्ञान एवं अभियांत्रिकी विभाग, IIT जोधपुर</h3>
-				<h3>प्रोफेसर, विद्युत अभियान्त्रिकी विभाग, IIT दिल्ली (लिअन)</h3>
-				<h3>पूर्व निदेशक, सीएसआईआर-सीईईआरआई पिलानी</h3>
-				<h3>FNAE, FNASc, FIAPR</h3>
-				<br />
 				<div className="portfolio-holder">
 					<img className="portfolio" src="/images/sumitk.jpg"></img>
 					<div>
@@ -51,19 +57,12 @@ function Acknowledgement(props) {
 						</h3>
 					</div>
 				</div>
-				<div className="portfolio-holder" style={{ marginTop: '2rem' }}>
-					<img
-						className="portfolio"
-						src="/images/software-inn.png"
-						style={{ border: 'none' }}
-					></img>
-					<div>
-						<a href="http://home.iitj.ac.in/~sumitk" target="_noblank">
-							<h2>Software Innovation Lab</h2>
-						</a>
-						<h3>IIT जोधपुर</h3>
-					</div>
-				</div>
+				<h2>Prof. Santanu Chaudhury</h2>
+				<h2 className="answer">निदेशक, IIT जोधपुर</h2>
+				<h3>प्रोफेसर, संगणक विज्ञान एवं अभियांत्रिकी विभाग, IIT जोधपुर</h3>
+				<h3>प्रोफेसर, विद्युत अभियान्त्रिकी विभाग, IIT दिल्ली (लिअन)</h3>
+				<h3>पूर्व निदेशक, सीएसआईआर-सीईईआरआई पिलानी</h3>
+				<h3>FNAE, FNASc, FIAPR</h3>
 			</div>
 			<br />
 			<div className="faq fadeInUp" style={{ animationDelay: `0.5s` }}>

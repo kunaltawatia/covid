@@ -1,100 +1,21 @@
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-thin-webfont.eot");
-//   src: url("fonts/Archia/archia-thin-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-thin-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-thin-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-thin-webfont.ttf") format("truetype");
-//   font-weight: 100;
-//   font-style: normal;
-// }
-
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-light-webfont.eot");
-//   src: url("fonts/Archia/archia-light-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-light-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-light-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-light-webfont.ttf") format("truetype");
-//   font-weight: 200;
-//   font-style: normal;
-// }
-
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-regular-webfont.eot");
-//   src: url("fonts/Archia/archia-regular-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-regular-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-regular-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-regular-webfont.ttf") format("truetype");
-//   font-weight: 300;
-//   font-style: normal;
-// }
-
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-medium-webfont.eot");
-//   src: url("fonts/Archia/archia-medium-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-medium-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-medium-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-medium-webfont.ttf") format("truetype");
-//   font-weight: 400;
-//   font-style: normal;
-// }
-
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-semibold-webfont.eot");
-//   src: url("fonts/Archia/archia-semibold-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-semibold-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-semibold-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-semibold-webfont.ttf") format("truetype");
-//   font-weight: 600;
-//   font-style: normal;
-// }
-
-// @font-face {
-//   font-family: "Archia";
-//   src: url("fonts/Archia/archia-bold-webfont.eot");
-//   src: url("fonts/Archia/archia-bold-webfont.eot?#iefix") format("embedded-opentype"),
-//     url("fonts/Archia/archia-bold-webfont.woff2") format("woff2"),
-//     url("fonts/Archia/archia-bold-webfont.woff") format("woff"),
-//     url("fonts/Archia/archia-bold-webfont.ttf") format("truetype");
-//   font-weight: 900;
-//   font-style: normal;
-// }
-
 @font-face {
   font-family: "cambay";
-  src: url("fonts/Cambay/Cambay-Regular.ttf") format("truetype");
+  src: url("fonts/Cambay/cambay-regular-webfont.eot");
+  src: url("fonts/Cambay/cambay-regular-webfont.eot?#iefix") format("embedded-opentype"),
+    url("fonts/Cambay/cambay-regular-webfont.woff2") format("woff2"),
+    url("fonts/Cambay/cambay-regular-webfont.woff") format("woff"),
+    url("fonts/Cambay/cambay-regular-webfont.ttf") format("truetype");
   font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "cambay";
-  src: url("fonts/Cambay/Cambay-Bold.ttf") format("truetype");
-  font-weight: 700;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "roboto";
-  src: url("fonts/Roboto/Roboto-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "roboto";
-  src: url("fonts/Roboto/Roboto-Bold.ttf") format("truetype");
-  font-weight: 700;
   font-style: normal;
 }
 
 @font-face {
   font-family: "yatra-one";
-  src: url("fonts/Yatra_One/YatraOne-Regular.ttf") format("truetype");
+  src: url("fonts/Yatra_One/yatraone-regular-webfont.eot");
+  src: url("fonts/Yatra_One/yatraone-regular-webfont.eot?#iefix") format("embedded-opentype"),
+    url("fonts/Yatra_One/yatraone-regular-webfont.woff2") format("woff2"),
+    url("fonts/Yatra_One/yatraone-regular-webfont.woff") format("woff"),
+    url("fonts/Yatra_One/yatraone-regular-webfont.ttf") format("truetype");
   font-style: normal;
 }
 
@@ -195,42 +116,42 @@ body {
 }
 
 h1 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 24px !important;
   font-weight: 900;
   // text-transform: uppercase;
 }
 
 h2 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 18px !important;
   font-weight: 400;
   text-transform: uppercase;
 }
 
 h3 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 14px !important;
   font-weight: 400;
   text-transform: uppercase;
 }
 
 h4 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 13px !important;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 h5 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 12px !important;
   font-weight: 900;
   text-transform: uppercase;
 }
 
 h6 {
-  font-family: "yatra-one";
+  font-family: "yatra-one", Arial;
   font-size: 11px !important;
   font-weight: 600;
   text-transform: uppercase;
@@ -288,9 +209,11 @@ h6 {
   }
   .who-video {
     object-fit: cover;
-    height: 260px;
+    width: 100%;
+    height: auto !important;
+  }
+  .who-video-holder {
     margin: 1rem;
-    margin-top: 4rem;
   }
   .helpline {
     margin-top: 4rem;
@@ -314,13 +237,13 @@ h6 {
       h2 {
         color: $cherry;
         font-weight: 700;
-        font-family: "yatra-one";
+        font-family: "yatra-one", Arial;
       }
       a {
         // border-radius: 5px;
         align-self: flex-start;
         margin: 0.25rem;
-        font-family: "yatra-one";
+        font-family: "yatra-one", Arial;
         font-weight: 700;
         word-wrap: break-word;
         text-decoration: none;
@@ -345,7 +268,7 @@ h6 {
     flex: 1;
     padding: 0.5rem;
     border: none;
-    font-family: "cambay";
+    font-family: "cambay", Arial;
     text-transform: uppercase;
     background: $blue-light;
     color: $blue-mid;
@@ -381,7 +304,7 @@ h6 {
       margin: 20px 15px -10px 5px;
     }
     &.start {
-      font-family: "yatra-one";
+      font-family: "yatra-one", Arial;
     }
     &.refresh {
       padding: 0px;
@@ -437,7 +360,7 @@ h6 {
       margin: 0;
       color: $cherry;
       font-weight: bold;
-      font-family: "roboto";
+      font-family: "cambay", Arial;
     }
     h3 {
       color: $gray-mid;
@@ -454,7 +377,7 @@ h6 {
     padding-left: 1rem;
     border: none;
     flex-grow: 5;
-    font-family: "cambay";
+    font-family: "cambay", Arial;
     background: $gray-light;
     color: $gray-mid;
     font-weight: 700;
@@ -590,7 +513,7 @@ h6 {
 }
 
 .Chat {
-  font-family: "cambay";
+  font-family: "cambay", Arial;
   font-size: 1.2rem;
   font-weight: 600;
 
@@ -630,7 +553,7 @@ h6 {
         padding: 0.5rem;
         border: none;
         flex-grow: 5;
-        font-family: "cambay";
+        font-family: "cambay", Arial;
         text-transform: uppercase;
         background: $gray-light;
         color: $gray;
@@ -658,7 +581,7 @@ h6 {
         padding-left: 1rem;
         border: none;
         width: calc(100% - 2rem);
-        font-family: "cambay";
+        font-family: "cambay", Arial;
         background: $gray-light;
         color: $gray;
         font-weight: 700;
@@ -764,7 +687,7 @@ h6 {
     flex: 1;
     padding: 0.5rem;
     border: none;
-    font-family: "cambay";
+    font-family: "cambay", Arial;
     text-transform: uppercase;
     background: $gray-light;
     color: $gray;
@@ -814,7 +737,7 @@ h6 {
       border: 2px #6c757d99 dashed;
     }
     &.start {
-      font-family: "yatra-one";
+      font-family: "yatra-one", Arial;
     }
     &.close-icon {
       position: absolute;
@@ -863,7 +786,7 @@ h6 {
       select {
         border: none;
         flex-grow: 5;
-        font-family: "roboto";
+        font-family: "cambay", Arial;
         background: $gray-light;
         color: $gray;
         cursor: pointer;
@@ -898,7 +821,7 @@ h6 {
     a {
       display: inline-block;
       font-size: 14px;
-      font-family: "roboto";
+      font-family: "cambay", Arial;
       text-decoration: none;
       margin-right: 2rem;
       color: $gray-mid;
@@ -946,7 +869,7 @@ h6 {
     .titles {
       h2 {
         margin-top: 0.25rem;
-        font-family: "roboto";
+        font-family: "cambay", Arial;
         color: $gray;
         font-weight: 700;
       }
@@ -963,7 +886,7 @@ h6 {
       h2,
       h4 {
         margin: 0;
-        font-family: "yatra-one";
+        font-family: "yatra-one", Arial;
         color: $gray;
         font-weight: 500;
         text-align: right;
@@ -1004,7 +927,7 @@ a.button {
   flex-direction: row;
   padding: 0.5rem;
   border: none;
-  font-family: "roboto";
+  font-family: "cambay", Arial;
   text-transform: uppercase;
   background: $blue-light;
   color: $blue-mid;
@@ -1050,7 +973,7 @@ a.button {
   justify-content: space-between;
   align-self: center;
   width: 30rem;
-  font-family: "roboto";
+  font-family: "cambay", Arial;
   .level-item {
     display: flex;
     flex-direction: column;
@@ -1137,7 +1060,7 @@ table {
   position: relative;
   width: 30rem;
   align-self: center;
-  font-family: "roboto";
+  font-family: "cambay", Arial;
   text-transform: uppercase;
   margin-bottom: 1rem;
   thead {
@@ -1329,7 +1252,7 @@ table {
   margin-bottom: 1rem;
   align-self: center;
   a {
-    font-family: "roboto";
+    font-family: "cambay", Arial;
     text-transform: uppercase;
     word-wrap: break-word;
     font-weight: 900;
@@ -1415,6 +1338,7 @@ footer {
       font-weight: 400;
       color: $blue;
       background-color: $blue-light;
+      text-align: right;
     }
     .link {
       text-decoration: none;
@@ -1446,7 +1370,7 @@ footer {
   h3 {
     margin: 0;
     color: $gray;
-    font-family: "roboto";
+    font-family: "cambay", Arial;
   }
   h1 {
     margin: 0;
@@ -1459,7 +1383,7 @@ footer {
   }
   .answer {
     color: $blue-mid;
-    font-family: "cambay";
+    font-family: "cambay", Arial;
   }
   .mohfw-logo {
     width: 20rem;
@@ -1486,7 +1410,7 @@ footer {
     align-self: flex-end;
   }
   a {
-    font-family: "roboto";
+    font-family: "cambay", Arial;
     text-transform: uppercase;
     word-wrap: break-word;
     font-weight: 900;
@@ -1515,7 +1439,7 @@ footer {
   h3 {
     margin: 0;
     color: $gray;
-    font-family: "roboto";
+    font-family: "cambay", Arial;
   }
   h1 {
     margin: 0;
@@ -1528,7 +1452,7 @@ footer {
   }
   .answer {
     color: $blue-mid;
-    font-family: "cambay";
+    font-family: "cambay", Arial;
   }
   .mohfw-logo {
     width: 20rem;
@@ -1603,6 +1527,7 @@ footer {
     }
   }
   .Acknowledgment {
+    width: 100%;
     .portfolio {
       width: 80px;
     }

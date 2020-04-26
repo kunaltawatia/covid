@@ -29,7 +29,7 @@ function Navbar(props) {
 			>
 				<img
 					className="fadeInUp"
-					src="/corona.png"
+					src="/favicon.ico"
 					style={{
 						animationDelay: '0.0s',
 						width: view === 'Clusters' ? '1.5rem' : '',

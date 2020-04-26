@@ -3,7 +3,7 @@
   "name": "COVID-19 सहायता पोर्टल",
   "icons": [
     {
-      "src": "corona.png",
+      "src": "favicon.ico",
       "sizes": "64x64",
       "type": "image/x-icon"
     }

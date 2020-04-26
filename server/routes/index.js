@@ -203,7 +203,7 @@ router.get('/patient-list', authenticate, (req, res) => {
 	const { username: doctor } = req.user;
 	Patient.find(
 		{ doctor },
-		{ chat: 0 },
+		{ chat: 0, last_notified_at: 0, __v: 0, chat_id: 0 },
 		{
 			limit: pageSize,
 			skip: pageSize * Math.max(0, page - 1),
@@ -214,7 +214,14 @@ router.get('/patient-list', authenticate, (req, res) => {
 		(err, patients) => {
 			if (err) return res.json({ error: true });
 			res.json({
-				patients
+				patients: patients.map(({ _doc: patient }) => {
+					const { created_at, last_messaged_at } = patient;
+					delete patient['created_at'];
+					delete patient['last_messaged_at'];
+					patient['Last Visited'] = new Date(last_messaged_at).toLocaleString();
+					patient['Registered'] = new Date(created_at).toLocaleString();
+					return patient;
+				})
 			});
 		}
 	);

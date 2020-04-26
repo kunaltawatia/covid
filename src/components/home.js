@@ -36,7 +36,7 @@ function Home() {
 				<div className="header fadeInUp" style={{ animationDelay: '0.5s' }}>
 					<div className="header-mid">
 						<div className="titles">
-							<h1>CoViDoc टेली-कंसल्टेंसी पोर्टल</h1>
+							<h1>टेली-कंसल्टेंसी पोर्टल</h1>
 							<h2>आईआईटी जोधपुर की पहल</h2>
 						</div>
 					</div>
@@ -67,12 +67,14 @@ function Home() {
 				</div>
 
 				<Level data={rajasthanStats} />
-				<video
-					src="/videos/who.mp4"
-					controls={true}
-					className="who-video fadeInUp"
-					style={{ animationDelay: '0.5s' }}
-				></video>
+				<LazyLoad offsetVertical={300} className="who-video-holder">
+					<video
+						src="/videos/who.mp4"
+						controls={true}
+						className="who-video fadeInUp"
+						style={{ animationDelay: '0.5s' }}
+					></video>
+				</LazyLoad>
 			</div>
 			<LazyLoad offsetVertical={300}>
 				<img
@@ -95,7 +97,7 @@ function Home() {
 						<h2 style={{ textAlign: 'right' }}>COVID-19 हेल्पलाइन ईमेल आई.डी.</h2>
 						<a href="mail:ncov2019@gov.in">ncov2019@gov.in</a>
 						<a href="mail:ncov2019@gmail.com">ncov2019@gmail.com</a>
-						<h2 style={{ textAlign: 'right' }}>CoViDoc पोर्टल हेल्पलाइन ईमेल आई.डी.</h2>
+						<h2 style={{ textAlign: 'right' }}>टेली-कंसल्टेंसी पोर्टल हेल्पलाइन ईमेल आई.डी.</h2>
 						<a href="mail:telemedicineiitj@gmail.com">telemedicineiitj@gmail.com</a>
 					</div>
 				</div>
