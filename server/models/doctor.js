@@ -19,14 +19,25 @@ const DoctorSchema = new Schema({
 		required: true,
 		minlength: 1
 	},
+	/**
+	 * attending field is used while doctor is online
+	 * to get the patient he has picked in his interface
+	 */
 	attending: {
 		type: String,
 		default: ''
 	},
+	/**
+	 * this contains the socket id of doctor while chatting
+	 * it is used by IO to emit events.
+	 */
 	chat_id: {
 		type: String,
 		default: ''
 	},
+	/**
+	 * doctor registered at
+	 */
 	created_at: Number,
 	name: String,
 	department: String,

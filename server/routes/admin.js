@@ -7,7 +7,9 @@ const Patient = require('../models/patient');
 const { mail } = require('../helper/mail');
 
 const router = express.Router();
-
+/**
+ * Middleware used for loading session through cookies
+ */
 router.use((req, res, next) => {
 	if (req.session.admin_username) {
 		Admin.findOne({ username: req.session.admin_username }, (err, admin) => {
@@ -31,7 +33,10 @@ router.use((req, res, next) => {
 		});
 	}
 });
-
+/**
+ * Update details of doctor identified by id given in url param
+ * by the POST body enclosed
+ */
 router.post('/doctor/:id', (req, res) => {
 	const { username, password, hospital, telephone, email, name, post, department } = req.body;
 	const { id } = req.params;
@@ -56,6 +61,9 @@ router.post('/doctor/:id', (req, res) => {
 	);
 });
 
+/**
+ * Delete a doctor identified by id given in url param
+ */
 router.delete('/doctor/:id', (req, res) => {
 	const { id } = req.params;
 	Doctor.findByIdAndDelete(id, (err) => {
@@ -63,7 +71,9 @@ router.delete('/doctor/:id', (req, res) => {
 		res.json({});
 	});
 });
-
+/**
+ * Create a doctor document
+ */
 router.put('/doctor', (req, res) => {
 	const { username, password, hospital, telephone, email, name, post, department } = req.body;
 	Doctor.create(
@@ -134,20 +144,26 @@ router.get('/doctor-list', (req, res) => {
 		}
 	);
 });
-
+/**
+ * Gives all the chats to be used in AI models.
+ */
 router.get('/chats', (req, res) => {
 	Patient.find({}, { chat: 1 }, (err, chats) => {
 		if (err || !chats) return res.json({ error: true });
 		res.json({ chats });
 	});
 });
-
+/**
+ * admin logout
+ */
 router.get('/logout', (req, res) => {
 	// req.session.destroy();
 	req.session.admin_username = null;
 	res.json({ loggedOut: true });
 });
-
+/**
+ * admin login
+ */
 router.post('/login', (req, res) => {
 	const { username } = req.user;
 	res.json({ login: true, username });

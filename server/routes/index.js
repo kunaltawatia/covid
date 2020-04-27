@@ -31,6 +31,9 @@ const router = express.Router();
 require('../helper/corona_data');
 
 /* Common */
+/**
+ * Corona stats
+ */
 router.get('/cases', (req, res) => {
 	fs.readFile(path.join(__dirname, '../data/cases.json'), 'utf8', (err, doc) => {
 		if (err) return res.json({ err });
@@ -39,7 +42,9 @@ router.get('/cases', (req, res) => {
 		});
 	});
 });
-
+/**
+ * total website hits
+ */
 router.get('/hits', (req, res) => {
 	Hits.findOneAndUpdate({}, { $inc: { hits: 1 } }, (err, result) => {
 		if (err) return res.json({});
@@ -47,7 +52,10 @@ router.get('/hits', (req, res) => {
 		res.json({ hits });
 	});
 });
-
+/**
+ * upload any image
+ * this is used in chat of doctor and patient.
+ */
 router.post('/image', upload.any(), (req, res) => {
 	if (req.files.length) {
 		const image = req.files[0];
@@ -59,6 +67,10 @@ router.post('/image', upload.any(), (req, res) => {
 });
 
 /* Patient */
+/**
+ * Final assessment after initial interaction
+ * of chatbot with given questions
+ */
 router.post('/assessment', (req, res) => {
 	const { answers, latitude, longitude, chat } = req.body;
 	const oldPatient = answers['24'] === '0' ? getId(answers['22'], answers['23']) : null;
@@ -159,13 +171,19 @@ router.post('/assessment', (req, res) => {
 		});
 	}
 });
-
+/**
+ * gives questions for pre assessment
+ */
 router.get('/questions', (req, res) => {
-	/* doctor's availability status and welcome message */
+	/* TODO: doctor's availability status and welcome message */
 	Doctor.find().distinct('hospital', (err, hospitals) => {
 		if (err || !hospitals) return res.json({});
 
 		res.json({
+			/**
+			 * the 'choose hospital' question
+			 * has to be given options of hospitals dynamically
+			 */
 			questions: questions.map((question) => {
 				if (question.id === 25) {
 					return {
@@ -197,6 +215,9 @@ router.get('/questions', (req, res) => {
 });
 
 /* Doctor */
+/**
+ * Provides patient list for doctor's interface
+ */
 router.get('/patient-list', authenticate, (req, res) => {
 	const { page } = req.query;
 	const pageSize = 30;
@@ -226,7 +247,10 @@ router.get('/patient-list', authenticate, (req, res) => {
 		}
 	);
 });
-
+/**
+ * Used by doctor to get other doctors
+ * of the same hospital he can refer the same patient to
+ */
 router.get('/doctor-list', authenticate, (req, res) => {
 	const { hospital, username } = req.user;
 	Doctor.find({ hospital, username: { $ne: username } }, (err, doctors) => {
@@ -236,13 +260,17 @@ router.get('/doctor-list', authenticate, (req, res) => {
 		});
 	});
 });
-
+/**
+ * doctors logout
+ */
 router.get('/logout', authenticate, (req, res) => {
 	// req.session.destroy();
 	req.session.username = null;
 	res.json({ loggedOut: true });
 });
-
+/**
+ * doctors login
+ */
 router.post('/login', authenticate, (req, res) => {
 	const { username, hospital } = req.user;
 	res.json({ login: true, username, hospital });

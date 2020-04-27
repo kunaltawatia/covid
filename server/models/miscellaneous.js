@@ -4,6 +4,9 @@ const { Schema } = mongoose;
 
 // create a schema
 const HitSchema = new Schema({
+	/**
+	 * website hits
+	 */
 	hits: Number
 });
 
